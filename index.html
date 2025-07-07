@@ -788,9 +788,9 @@
                     <div class="card-professional">
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">التنبيهات والإشعارات</h3>
                         <div id="alertsList" class="space-y-2">
-                            <div class="flex items-center p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                                <i class="fas fa-exclamation-triangle text-yellow-600 ml-2"></i>
-                                <span class="text-sm text-yellow-800 dark:text-yellow-200">لا توجد تنبيهات جديدة</span>
+                            <div class="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                <i class="fas fa-check-circle text-green-600 ml-2"></i>
+                                <span class="text-sm text-green-800 dark:text-green-200">لا توجد تنبيهات جديدة</span>
                             </div>
                         </div>
                     </div>
@@ -1630,49 +1630,18 @@
                 // Simulate loading data
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                // Initialize with sample data
-                appState.students = [
-                    { id: '1', aysisNumber: '12345', name: 'أحمد محمد', grade: 'الصف الأول', area: 'المنطقة الشمالية', supervisorId: '1', driverId: '1' },
-                    { id: '2', aysisNumber: '12346', name: 'فاطمة علي', grade: 'الصف الثاني', area: 'المنطقة الجنوبية', supervisorId: '2', driverId: '2' }
-                ];
-                
-                appState.supervisors = [
-                    { id: '1', permitNumber: 'S001', name: 'مريم أحمد', phone: '0501234567', expiryDate: '2024-12-31', area: 'المنطقة الشمالية' },
-                    { id: '2', permitNumber: 'S002', name: 'خديجة سالم', phone: '0501234568', expiryDate: '2024-11-30', area: 'المنطقة الجنوبية' }
-                ];
-                
-                appState.drivers = [
-                    { id: '1', permitNumber: 'D001', name: 'محمد سالم', phone: '0501234569', area: 'المنطقة الشمالية', expiryDate: '2024-10-31' },
-                    { id: '2', permitNumber: 'D002', name: 'عبدالله أحمد', phone: '0501234570', area: 'المنطقة الجنوبية', expiryDate: '2024-09-30' }
-                ];
-                
-                appState.buses = [
-                    { id: '1', number: 'B001', company: 'شركة النقل الأولى', type: 'أشوك', dotNumber: 'DOT001', dotExpiryDate: '2024-08-31', ownershipExpiryDate: '2025-12-31' },
-                    { id: '2', number: 'B002', company: 'شركة النقل الثانية', type: 'روزا', dotNumber: 'DOT002', dotExpiryDate: '2024-07-31', ownershipExpiryDate: '2025-11-30' }
-                ];
-                
-                appState.fuel = [
-                    { id: '1', busId: '1', driverId: '1', date: '2024-01-15', amount: '500' },
-                    { id: '2', busId: '2', driverId: '2', date: '2024-01-16', amount: '450' }
-                ];
-                
-                appState.maintenance = [
-                    { id: '1', type: 'صيانة دورية', date: '2024-01-10', busId: '1', cost: '1000', description: 'تغيير زيت المحرك' },
-                    { id: '2', type: 'إصلاح طارئ', date: '2024-01-12', busId: '2', cost: '1500', description: 'إصلاح الفرامل' }
-                ];
-                
-                appState.attendance = [
-                    { id: '1', type: 'driver', personId: '1', date: '2024-01-20', status: 'present', time: '07:00' },
-                    { id: '2', type: 'supervisor', personId: '1', date: '2024-01-20', status: 'present', time: '07:15' }
-                ];
-                
-                appState.resignations = [
-                    { id: '1', personType: 'driver', personId: '1', status: 'resignation', date: '2024-01-18', reason: 'ظروف شخصية' },
-                    { id: '2', personType: 'supervisor', personId: '2', status: 'leave', date: '2024-01-19', reason: 'إجازة مرضية' }
-                ];
+                // Initialize with empty arrays
+                appState.students = [];
+                appState.supervisors = [];
+                appState.drivers = [];
+                appState.buses = [];
+                appState.fuel = [];
+                appState.maintenance = [];
+                appState.attendance = [];
+                appState.resignations = [];
                 
                 updateDashboardStats();
-                NotificationManager.show('تم تحميل البيانات بنجاح', 'success');
+                NotificationManager.show('تم تحميل النظام بنجاح', 'success');
             } catch (error) {
                 console.error('Error loading initial data:', error);
                 NotificationManager.show('حدث خطأ أثناء تحميل البيانات', 'error');
