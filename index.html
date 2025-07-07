@@ -517,6 +517,23 @@
             background: #fef3c7;
             color: #92400e;
         }
+
+        /* Form labels */
+        .form-label {
+            display: block;
+            text-sm;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .dark .form-label {
+            color: #d1d5db;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -594,7 +611,7 @@
                             </button>
                         </div>
                         
-                        <span class="text-gray-600 dark:text-gray-300 hidden sm:block font-medium">مرحباً، Admin</span>
+                        <span id="usernameDisplay" class="text-gray-600 dark:text-gray-300 hidden sm:block font-medium">مرحباً، Admin</span>
                         <button id="logoutBtn" class="text-red-600 hover:text-red-800 transition-colors p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20">
                             <i class="fas fa-sign-out-alt"></i>
                             <span class="hidden sm:inline mr-2">خروج</span>
@@ -1351,6 +1368,93 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // Database helper functions
+        class DatabaseManager {
+            static async saveData(collection, data) {
+                try {
+                    if (data.id) {
+                        await db.collection(collection).doc(data.id).set(data);
+                        return data.id;
+                    } else {
+                        const docRef = await db.collection(collection).add(data);
+                        return docRef.id;
+                    }
+                } catch (error) {
+                    console.error(`Error saving to ${collection}:`, error);
+                    throw error;
+                }
+            }
+
+            static async getAllData(collection) {
+                try {
+                    const snapshot = await db.collection(collection).get();
+                    const data = [];
+                    snapshot.forEach(doc => {
+                        data.push({ id: doc.id, ...doc.data() });
+                    });
+                    return data;
+                } catch (error) {
+                    console.error(`Error getting ${collection}:`, error);
+                    return [];
+                }
+            }
+
+            static async deleteData(collection, id) {
+                try {
+                    await db.collection(collection).doc(id).delete();
+                } catch (error) {
+                    console.error(`Error deleting from ${collection}:`, error);
+                    throw error;
+                }
+            }
+
+            static async updateData(collection, id, data) {
+                try {
+                    await db.collection(collection).doc(id).update(data);
+                } catch (error) {
+                    console.error(`Error updating ${collection}:`, error);
+                    throw error;
+                }
+            }
+        }
+
+        // Session management
+        class SessionManager {
+            static setLoggedIn(username) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('username', username);
+                sessionStorage.setItem('loginTime', new Date().getTime());
+            }
+
+            static isLoggedIn() {
+                const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+                const loginTime = sessionStorage.getItem('loginTime');
+                
+                if (!isLoggedIn || !loginTime) return false;
+                
+                // Check if session is still valid (24 hours)
+                const currentTime = new Date().getTime();
+                const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours
+                
+                if (currentTime - parseInt(loginTime) > sessionDuration) {
+                    this.logout();
+                    return false;
+                }
+                
+                return true;
+            }
+
+            static logout() {
+                sessionStorage.removeItem('isLoggedIn');
+                sessionStorage.removeItem('username');
+                sessionStorage.removeItem('loginTime');
+            }
+
+            static getUsername() {
+                return sessionStorage.getItem('username') || 'Admin';
+            }
+        }
+
         // Dark mode detection
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.classList.add('dark');
@@ -1428,9 +1532,28 @@
         });
 
         function initializeApp() {
+            // Check if user is already logged in
+            if (SessionManager.isLoggedIn()) {
+                showMainApp();
+            } else {
+                showLoginPage();
+            }
+            
             setupEventListeners();
-            loadInitialData();
             setupResponsiveHandlers();
+        }
+
+        function showMainApp() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('usernameDisplay').textContent = `مرحباً، ${SessionManager.getUsername()}`;
+            loadInitialData();
+            showSection('dashboard');
+        }
+
+        function showLoginPage() {
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
         }
 
         function setupEventListeners() {
@@ -1588,9 +1711,8 @@
                 
                 try {
                     setTimeout(() => {
-                        document.getElementById('loginPage').classList.add('hidden');
-                        document.getElementById('mainApp').classList.remove('hidden');
-                        showSection('dashboard');
+                        SessionManager.setLoggedIn(username);
+                        showMainApp();
                         NotificationManager.show('مرحباً بك في النظام الشامل لإدارة النقل المدرسي', 'success');
                     }, 1500);
                 } catch (error) {
@@ -1612,8 +1734,8 @@
 
         function handleLogout() {
             if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-                document.getElementById('mainApp').classList.add('hidden');
-                document.getElementById('loginPage').classList.remove('hidden');
+                SessionManager.logout();
+                showLoginPage();
                 document.getElementById('username').value = '';
                 document.getElementById('password').value = '';
                 document.getElementById('loginText').classList.remove('hidden');
@@ -1627,18 +1749,17 @@
         async function loadInitialData() {
             showLoading();
             try {
-                // Simulate loading data
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Initialize with empty arrays
-                appState.students = [];
-                appState.supervisors = [];
-                appState.drivers = [];
-                appState.buses = [];
-                appState.fuel = [];
-                appState.maintenance = [];
-                appState.attendance = [];
-                appState.resignations = [];
+                // Load all data from Firebase
+                await Promise.all([
+                    loadDataFromFirebase('students'),
+                    loadDataFromFirebase('supervisors'),
+                    loadDataFromFirebase('drivers'),
+                    loadDataFromFirebase('buses'),
+                    loadDataFromFirebase('fuel'),
+                    loadDataFromFirebase('maintenance'),
+                    loadDataFromFirebase('attendance'),
+                    loadDataFromFirebase('resignations')
+                ]);
                 
                 updateDashboardStats();
                 NotificationManager.show('تم تحميل النظام بنجاح', 'success');
@@ -1647,6 +1768,16 @@
                 NotificationManager.show('حدث خطأ أثناء تحميل البيانات', 'error');
             } finally {
                 hideLoading();
+            }
+        }
+
+        async function loadDataFromFirebase(collection) {
+            try {
+                const data = await DatabaseManager.getAllData(collection);
+                appState[collection] = data;
+            } catch (error) {
+                console.error(`Error loading ${collection}:`, error);
+                appState[collection] = [];
             }
         }
 
@@ -2427,15 +2558,16 @@
             };
             
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-                
                 if (editingId) {
+                    data.id = editingId;
+                    await DatabaseManager.saveData('students', data);
                     const index = appState.students.findIndex(s => s.id === editingId);
-                    appState.students[index] = { id: editingId, ...data };
+                    appState.students[index] = data;
                     NotificationManager.show('تم تحديث الطالب بنجاح', 'success');
                 } else {
-                    const newId = Date.now().toString();
-                    appState.students.push({ id: newId, ...data });
+                    const newId = await DatabaseManager.saveData('students', data);
+                    data.id = newId;
+                    appState.students.push(data);
                     NotificationManager.show('تم إضافة الطالب بنجاح', 'success');
                 }
                 
@@ -2521,15 +2653,16 @@
             };
             
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-                
                 if (editingId) {
+                    data.id = editingId;
+                    await DatabaseManager.saveData('supervisors', data);
                     const index = appState.supervisors.findIndex(s => s.id === editingId);
-                    appState.supervisors[index] = { id: editingId, ...data };
+                    appState.supervisors[index] = data;
                     NotificationManager.show('تم تحديث المشرفة بنجاح', 'success');
                 } else {
-                    const newId = Date.now().toString();
-                    appState.supervisors.push({ id: newId, ...data });
+                    const newId = await DatabaseManager.saveData('supervisors', data);
+                    data.id = newId;
+                    appState.supervisors.push(data);
                     NotificationManager.show('تم إضافة المشرفة بنجاح', 'success');
                 }
                 
@@ -2616,15 +2749,16 @@
             };
             
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-                
                 if (editingId) {
+                    data.id = editingId;
+                    await DatabaseManager.saveData('drivers', data);
                     const index = appState.drivers.findIndex(d => d.id === editingId);
-                    appState.drivers[index] = { id: editingId, ...data };
+                    appState.drivers[index] = data;
                     NotificationManager.show('تم تحديث السائق بنجاح', 'success');
                 } else {
-                    const newId = Date.now().toString();
-                    appState.drivers.push({ id: newId, ...data });
+                    const newId = await DatabaseManager.saveData('drivers', data);
+                    data.id = newId;
+                    appState.drivers.push(data);
                     NotificationManager.show('تم إضافة السائق بنجاح', 'success');
                 }
                 
@@ -2720,15 +2854,16 @@
             };
             
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-                
                 if (editingId) {
+                    data.id = editingId;
+                    await DatabaseManager.saveData('buses', data);
                     const index = appState.buses.findIndex(b => b.id === editingId);
-                    appState.buses[index] = { id: editingId, ...data };
+                    appState.buses[index] = data;
                     NotificationManager.show('تم تحديث الحافلة بنجاح', 'success');
                 } else {
-                    const newId = Date.now().toString();
-                    appState.buses.push({ id: newId, ...data });
+                    const newId = await DatabaseManager.saveData('buses', data);
+                    data.id = newId;
+                    appState.buses.push(data);
                     NotificationManager.show('تم إضافة الحافلة بنجاح', 'success');
                 }
                 
@@ -2824,15 +2959,16 @@
             };
             
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-                
                 if (editingId) {
+                    data.id = editingId;
+                    await DatabaseManager.saveData('fuel', data);
                     const index = appState.fuel.findIndex(f => f.id === editingId);
-                    appState.fuel[index] = { id: editingId, ...data };
+                    appState.fuel[index] = data;
                     NotificationManager.show('تم تحديث تعبئة الديزل بنجاح', 'success');
                 } else {
-                    const newId = Date.now().toString();
-                    appState.fuel.push({ id: newId, ...data });
+                    const newId = await DatabaseManager.saveData('fuel', data);
+                    data.id = newId;
+                    appState.fuel.push(data);
                     NotificationManager.show('تم إضافة تعبئة الديزل بنجاح', 'success');
                 }
                 
@@ -2932,15 +3068,16 @@
             };
             
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-                
                 if (editingId) {
+                    data.id = editingId;
+                    await DatabaseManager.saveData('maintenance', data);
                     const index = appState.maintenance.findIndex(m => m.id === editingId);
-                    appState.maintenance[index] = { id: editingId, ...data };
+                    appState.maintenance[index] = data;
                     NotificationManager.show('تم تحديث الصيانة بنجاح', 'success');
                 } else {
-                    const newId = Date.now().toString();
-                    appState.maintenance.push({ id: newId, ...data });
+                    const newId = await DatabaseManager.saveData('maintenance', data);
+                    data.id = newId;
+                    appState.maintenance.push(data);
                     NotificationManager.show('تم إضافة الصيانة بنجاح', 'success');
                 }
                 
@@ -3064,15 +3201,16 @@
             };
             
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-                
                 if (editingId) {
+                    data.id = editingId;
+                    await DatabaseManager.saveData('attendance', data);
                     const index = appState.attendance.findIndex(a => a.id === editingId);
-                    appState.attendance[index] = { id: editingId, ...data };
+                    appState.attendance[index] = data;
                     NotificationManager.show('تم تحديث الحضور بنجاح', 'success');
                 } else {
-                    const newId = Date.now().toString();
-                    appState.attendance.push({ id: newId, ...data });
+                    const newId = await DatabaseManager.saveData('attendance', data);
+                    data.id = newId;
+                    appState.attendance.push(data);
                     NotificationManager.show('تم تسجيل الحضور بنجاح', 'success');
                 }
                 
@@ -3196,15 +3334,16 @@
             };
             
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-                
                 if (editingId) {
+                    data.id = editingId;
+                    await DatabaseManager.saveData('resignations', data);
                     const index = appState.resignations.findIndex(r => r.id === editingId);
-                    appState.resignations[index] = { id: editingId, ...data };
+                    appState.resignations[index] = data;
                     NotificationManager.show('تم تحديث البيانات بنجاح', 'success');
                 } else {
-                    const newId = Date.now().toString();
-                    appState.resignations.push({ id: newId, ...data });
+                    const newId = await DatabaseManager.saveData('resignations', data);
+                    data.id = newId;
+                    appState.resignations.push(data);
                     NotificationManager.show('تم إضافة البيانات بنجاح', 'success');
                 }
                 
@@ -3249,7 +3388,7 @@
             if (confirm(`هل أنت متأكد من حذف الطالب "${student.name}"؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
                 showLoading();
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await DatabaseManager.deleteData('students', id);
                     appState.students = appState.students.filter(s => s.id !== id);
                     renderStudentsTable();
                     updateDashboardStats();
@@ -3270,7 +3409,7 @@
             if (confirm(`هل أنت متأكد من حذف المشرفة "${supervisor.name}"؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
                 showLoading();
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await DatabaseManager.deleteData('supervisors', id);
                     appState.supervisors = appState.supervisors.filter(s => s.id !== id);
                     renderSupervisorsTable();
                     updateDashboardStats();
@@ -3292,7 +3431,7 @@
             if (confirm(`هل أنت متأكد من حذف السائق "${driver.name}"؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
                 showLoading();
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await DatabaseManager.deleteData('drivers', id);
                     appState.drivers = appState.drivers.filter(d => d.id !== id);
                     renderDriversTable();
                     updateDashboardStats();
@@ -3314,7 +3453,7 @@
             if (confirm(`هل أنت متأكد من حذف الحافلة رقم "${bus.number}"؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
                 showLoading();
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await DatabaseManager.deleteData('buses', id);
                     appState.buses = appState.buses.filter(b => b.id !== id);
                     renderBusesTable();
                     updateDashboardStats();
@@ -3336,7 +3475,7 @@
             if (confirm(`هل أنت متأكد من حذف سجل الديزل؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
                 showLoading();
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await DatabaseManager.deleteData('fuel', id);
                     appState.fuel = appState.fuel.filter(f => f.id !== id);
                     renderFuelTable();
                     updateTopFuelConsumers();
@@ -3358,7 +3497,7 @@
             if (confirm(`هل أنت متأكد من حذف سجل الصيانة؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
                 showLoading();
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await DatabaseManager.deleteData('maintenance', id);
                     appState.maintenance = appState.maintenance.filter(m => m.id !== id);
                     renderMaintenanceTable();
                     updateDashboardSummary();
@@ -3379,7 +3518,7 @@
             if (confirm(`هل أنت متأكد من حذف سجل الحضور؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
                 showLoading();
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await DatabaseManager.deleteData('attendance', id);
                     appState.attendance = appState.attendance.filter(a => a.id !== id);
                     renderAttendanceTable();
                     NotificationManager.show('تم حذف سجل الحضور بنجاح', 'success');
@@ -3399,7 +3538,7 @@
             if (confirm(`هل أنت متأكد من حذف هذا السجل؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
                 showLoading();
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await DatabaseManager.deleteData('resignations', id);
                     appState.resignations = appState.resignations.filter(r => r.id !== id);
                     renderResignationsTable();
                     NotificationManager.show('تم حذف السجل بنجاح', 'success');
@@ -3444,13 +3583,18 @@
             reader.readAsArrayBuffer(file);
         }
 
-        function processImportedData(section, data) {
+        async function processImportedData(section, data) {
             // This is a simplified import process
             // In a real application, you would need proper validation and mapping
-            data.forEach(item => {
-                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                appState[section].push({ id: newId, ...item });
-            });
+            for (const item of data) {
+                try {
+                    const newId = await DatabaseManager.saveData(section, item);
+                    item.id = newId;
+                    appState[section].push(item);
+                } catch (error) {
+                    console.error(`Error saving imported item:`, error);
+                }
+            }
             
             // Refresh the current section's table
             loadSectionData(currentSection);
@@ -3520,6 +3664,30 @@
         window.updatePersonOptions = updatePersonOptions;
         window.updateResignationPersonOptions = updateResignationPersonOptions;
         window.closeModal = closeModal;
+        window.viewStudent = viewStudent;
+        window.editStudent = editStudent;
+        window.deleteStudent = deleteStudent;
+        window.viewSupervisor = viewSupervisor;
+        window.editSupervisor = editSupervisor;
+        window.deleteSupervisor = deleteSupervisor;
+        window.viewDriver = viewDriver;
+        window.editDriver = editDriver;
+        window.deleteDriver = deleteDriver;
+        window.viewBus = viewBus;
+        window.editBus = editBus;
+        window.deleteBus = deleteBus;
+        window.viewFuel = viewFuel;
+        window.editFuel = editFuel;
+        window.deleteFuel = deleteFuel;
+        window.viewMaintenance = viewMaintenance;
+        window.editMaintenance = editMaintenance;
+        window.deleteMaintenance = deleteMaintenance;
+        window.viewAttendance = viewAttendance;
+        window.editAttendance = editAttendance;
+        window.deleteAttendance = deleteAttendance;
+        window.viewResignation = viewResignation;
+        window.editResignation = editResignation;
+        window.deleteResignation = deleteResignation;
     </script>
 </body>
 </html>
