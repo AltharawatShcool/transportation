@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -207,6 +208,21 @@
             max-height: calc(100vh - 32px);
             overflow-y: auto;
         }
+
+        /* File input styling */
+        .file-input {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .file-input input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -318,6 +334,10 @@
                             <i class="fas fa-clock ml-3 text-sm sm:text-base"></i>
                             <span class="text-sm sm:text-base">الحضور والانصراف</span>
                         </button>
+                        <button class="nav-item w-full text-right px-3 sm:px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white rounded-lg transition-colors touch-target" data-section="resignations">
+                            <i class="fas fa-user-times ml-3 text-sm sm:text-base"></i>
+                            <span class="text-sm sm:text-base">الاستقالات والإجازات</span>
+                        </button>
                     </div>
                 </nav>
             </aside>
@@ -383,9 +403,20 @@
                 <div id="students" class="section hidden">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
                         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">إدارة الطلاب</h2>
-                        <button id="addStudentBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
-                            <i class="fas fa-plus ml-2"></i>إضافة طالب
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="file-input">
+                                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                    <i class="fas fa-upload ml-2"></i>استيراد Excel
+                                </button>
+                                <input type="file" id="studentsImport" accept=".xlsx,.xls" onchange="importExcel('students', this)">
+                            </div>
+                            <button onclick="exportToExcel('students')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-download ml-2"></i>تصدير Excel
+                            </button>
+                            <button id="addStudentBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-plus ml-2"></i>إضافة طالب
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
@@ -397,7 +428,7 @@
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">رقم الباص</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">رقم 📱 الآيص</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">اسم الطالب</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">الصف</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">المنطقة</th>
@@ -417,9 +448,20 @@
                 <div id="supervisors" class="section hidden">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
                         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">تصاريح المشرفات</h2>
-                        <button id="addSupervisorBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
-                            <i class="fas fa-plus ml-2"></i>إضافة مشرفة
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="file-input">
+                                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                    <i class="fas fa-upload ml-2"></i>استيراد Excel
+                                </button>
+                                <input type="file" id="supervisorsImport" accept=".xlsx,.xls" onchange="importExcel('supervisors', this)">
+                            </div>
+                            <button onclick="exportToExcel('supervisors')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-download ml-2"></i>تصدير Excel
+                            </button>
+                            <button id="addSupervisorBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-plus ml-2"></i>إضافة مشرفة
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
@@ -450,9 +492,20 @@
                 <div id="drivers" class="section hidden">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
                         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">تصاريح السائقين</h2>
-                        <button id="addDriverBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
-                            <i class="fas fa-plus ml-2"></i>إضافة سائق
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="file-input">
+                                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                    <i class="fas fa-upload ml-2"></i>استيراد Excel
+                                </button>
+                                <input type="file" id="driversImport" accept=".xlsx,.xls" onchange="importExcel('drivers', this)">
+                            </div>
+                            <button onclick="exportToExcel('drivers')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-download ml-2"></i>تصدير Excel
+                            </button>
+                            <button id="addDriverBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-plus ml-2"></i>إضافة سائق
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
@@ -483,9 +536,20 @@
                 <div id="buses" class="section hidden">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
                         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">تصاريح الحافلات</h2>
-                        <button id="addBusBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
-                            <i class="fas fa-plus ml-2"></i>إضافة حافلة
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="file-input">
+                                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                    <i class="fas fa-upload ml-2"></i>استيراد Excel
+                                </button>
+                                <input type="file" id="busesImport" accept=".xlsx,.xls" onchange="importExcel('buses', this)">
+                            </div>
+                            <button onclick="exportToExcel('buses')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-download ml-2"></i>تصدير Excel
+                            </button>
+                            <button id="addBusBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-plus ml-2"></i>إضافة حافلة
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
@@ -501,6 +565,8 @@
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">اسم الشركة</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">النوع</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">رقم DOT</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">تاريخ انتهاء DOT</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">تاريخ انتهاء الملكية</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">العمليات</th>
                                     </tr>
                                 </thead>
@@ -515,9 +581,20 @@
                 <div id="fuel" class="section hidden">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
                         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">إدارة الديزل</h2>
-                        <button id="addFuelBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
-                            <i class="fas fa-plus ml-2"></i>إضافة تعبئة
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="file-input">
+                                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                    <i class="fas fa-upload ml-2"></i>استيراد Excel
+                                </button>
+                                <input type="file" id="fuelImport" accept=".xlsx,.xls" onchange="importExcel('fuel', this)">
+                            </div>
+                            <button onclick="exportToExcel('fuel')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-download ml-2"></i>تصدير Excel
+                            </button>
+                            <button id="addFuelBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-plus ml-2"></i>إضافة تعبئة
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
@@ -553,9 +630,20 @@
                 <div id="maintenance" class="section hidden">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
                         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">إدارة الصيانة</h2>
-                        <button id="addMaintenanceBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
-                            <i class="fas fa-plus ml-2"></i>إضافة صيانة
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="file-input">
+                                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                    <i class="fas fa-upload ml-2"></i>استيراد Excel
+                                </button>
+                                <input type="file" id="maintenanceImport" accept=".xlsx,.xls" onchange="importExcel('maintenance', this)">
+                            </div>
+                            <button onclick="exportToExcel('maintenance')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-download ml-2"></i>تصدير Excel
+                            </button>
+                            <button id="addMaintenanceBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-plus ml-2"></i>إضافة صيانة
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
@@ -570,8 +658,6 @@
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">نوع الصيانة</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">تاريخ الصيانة</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">رقم الحافلة</th>
-                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">رقم DOT</th>
-                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">تاريخ انتهاء DOT</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">العمليات</th>
                                     </tr>
                                 </thead>
@@ -586,9 +672,20 @@
                 <div id="attendance" class="section hidden">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
                         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">الحضور والانصراف</h2>
-                        <button id="addAttendanceBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
-                            <i class="fas fa-plus ml-2"></i>تسجيل حضور
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="file-input">
+                                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                    <i class="fas fa-upload ml-2"></i>استيراد Excel
+                                </button>
+                                <input type="file" id="attendanceImport" accept=".xlsx,.xls" onchange="importExcel('attendance', this)">
+                            </div>
+                            <button onclick="exportToExcel('attendance')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-download ml-2"></i>تصدير Excel
+                            </button>
+                            <button id="addAttendanceBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-plus ml-2"></i>تسجيل حضور
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -627,6 +724,50 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Resignations Section -->
+                <div id="resignations" class="section hidden">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">الاستقالات والإجازات</h2>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="file-input">
+                                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                    <i class="fas fa-upload ml-2"></i>استيراد Excel
+                                </button>
+                                <input type="file" id="resignationsImport" accept=".xlsx,.xls" onchange="importExcel('resignations', this)">
+                            </div>
+                            <button onclick="exportToExcel('resignations')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-download ml-2"></i>تصدير Excel
+                            </button>
+                            <button id="addResignationBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                                <i class="fas fa-plus ml-2"></i>إضافة جديد
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+                        <div class="mb-4">
+                            <input type="text" id="resignationSearch" placeholder="البحث في سجلات الاستقالات والإجازات..." class="mobile-form-input w-full px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">الاسم</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">النوع</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">الحالة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">التاريخ</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">السبب</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">العمليات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resignationsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -651,15 +792,12 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDWX7eDpIDcAnyLRfRtJorCLJ4T74d3me4",
-            authDomain: "transportation-c1152.firebaseapp.com",
-            databaseURL: "https://transportation-c1152-default-rtdb.firebaseio.com",
-            projectId: "transportation-c1152",
-            storageBucket: "transportation-c1152.firebasestorage.app",
-            messagingSenderId: "632274574767",
-            appId: "1:632274574767:web:a8dda8b750743e13ae635a",
-            measurementId: "G-QJ18MLDMHF"
-            
+            apiKey: "AIzaSyC5R8gD3tJ9fJ5qBk7Y8eA7oA5mA8cK9fK",
+            authDomain: "school-transport-demo.firebaseapp.com",
+            projectId: "school-transport-demo",
+            storageBucket: "school-transport-demo.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abc123def456ghi789"
         };
 
         // Initialize Firebase
@@ -691,7 +829,8 @@
             buses: [],
             fuel: [],
             maintenance: [],
-            attendance: []
+            attendance: [],
+            resignations: []
         };
 
         // Initialize Application
@@ -741,6 +880,7 @@
             document.getElementById('addFuelBtn').addEventListener('click', () => openFuelForm());
             document.getElementById('addMaintenanceBtn').addEventListener('click', () => openMaintenanceForm());
             document.getElementById('addAttendanceBtn').addEventListener('click', () => openAttendanceForm());
+            document.getElementById('addResignationBtn').addEventListener('click', () => openResignationForm());
             
             // Search functionality
             document.getElementById('studentSearch').addEventListener('input', () => filterTable('students'));
@@ -749,6 +889,7 @@
             document.getElementById('busSearch').addEventListener('input', () => filterTable('buses'));
             document.getElementById('fuelSearch').addEventListener('input', () => filterTable('fuel'));
             document.getElementById('maintenanceSearch').addEventListener('input', () => filterTable('maintenance'));
+            document.getElementById('resignationSearch').addEventListener('input', () => filterTable('resignations'));
         }
 
         function setupResponsiveHandlers() {
@@ -875,7 +1016,8 @@
                     loadBuses(),
                     loadFuel(),
                     loadMaintenance(),
-                    loadAttendance()
+                    loadAttendance(),
+                    loadResignations()
                 ]);
                 updateDashboardStats();
             } catch (error) {
@@ -910,10 +1052,13 @@
                 case 'attendance':
                     renderAttendanceTable();
                     break;
+                case 'resignations':
+                    renderResignationsTable();
+                    break;
             }
         }
 
-        // Data loading functions (same as before but with better error handling)
+        // Data loading functions
         async function loadStudents() {
             try {
                 const snapshot = await db.collection('students').get();
@@ -1005,6 +1150,19 @@
             }
         }
 
+        async function loadResignations() {
+            try {
+                const snapshot = await db.collection('resignations').get();
+                appState.resignations = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            } catch (error) {
+                console.error('Error loading resignations:', error);
+                appState.resignations = [];
+            }
+        }
+
         // Dashboard functions
         function updateDashboardStats() {
             document.getElementById('totalStudents').textContent = appState.students.length;
@@ -1013,7 +1171,7 @@
             document.getElementById('totalSupervisors').textContent = appState.supervisors.length;
         }
 
-        // Table rendering functions (updated for responsive design)
+        // Table rendering functions
         function renderStudentsTable() {
             const tbody = document.getElementById('studentsTableBody');
             tbody.innerHTML = '';
@@ -1025,7 +1183,7 @@
                 const row = document.createElement('tr');
                 row.classList.add('slide-in');
                 row.innerHTML = `
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${student.busNumber || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${student.aysisNumber || '-'}</td>
                     <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${student.grade} - ${student.area}</div>
                         ${student.name}
@@ -1126,6 +1284,8 @@
                     </td>
                     <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${bus.type}</td>
                     <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${bus.dotNumber}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${bus.dotExpiryDate || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${bus.ownershipExpiryDate || '-'}</td>
                     <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex space-x-1 space-x-reverse">
                             <button onclick="editBus('${bus.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
@@ -1190,8 +1350,6 @@
                         ${maintenance.date}
                     </td>
                     <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${bus?.number || '-'}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${bus?.dotNumber || '-'}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${maintenance.dotExpiryDate || '-'}</td>
                     <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex space-x-1 space-x-reverse">
                             <button onclick="editMaintenance('${maintenance.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
@@ -1264,6 +1422,60 @@
             });
         }
 
+        function renderResignationsTable() {
+            const tbody = document.getElementById('resignationsTableBody');
+            tbody.innerHTML = '';
+            
+            appState.resignations.forEach(resignation => {
+                let person = null;
+                if (resignation.personType === 'driver') {
+                    person = appState.drivers.find(d => d.id === resignation.personId);
+                } else if (resignation.personType === 'supervisor') {
+                    person = appState.supervisors.find(s => s.id === resignation.personId);
+                }
+                
+                const statusText = {
+                    'resignation': 'استقالة',
+                    'termination': 'إنهاء خدمات',
+                    'leave': 'إجازة'
+                }[resignation.status] || resignation.status;
+
+                const statusClass = {
+                    'resignation': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                    'termination': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+                    'leave': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                }[resignation.status] || 'bg-gray-100 text-gray-800';
+                
+                const row = document.createElement('tr');
+                row.classList.add('slide-in');
+                row.innerHTML = `
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${resignation.personType === 'driver' ? 'سائق' : 'مشرفة'}</div>
+                        ${person?.name || '-'}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${resignation.personType === 'driver' ? 'سائق' : 'مشرفة'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${resignation.date}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${resignation.reason || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-1 space-x-reverse">
+                            <button onclick="editResignation('${resignation.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteResignation('${resignation.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
         function updateTopFuelConsumers() {
             const container = document.getElementById('topFuelConsumers');
             container.innerHTML = '';
@@ -1301,7 +1513,14 @@
             });
         }
 
-        // Form functions (updated for responsive design)
+        // Check for duplicate AYSIS number
+        function checkDuplicateAysisNumber(aysisNumber, excludeId = null) {
+            return appState.students.some(student => 
+                student.aysisNumber === aysisNumber && student.id !== excludeId
+            );
+        }
+
+        // Form functions
         function openStudentForm(studentId = null) {
             editingId = studentId;
             const student = studentId ? appState.students.find(s => s.id === studentId) : null;
@@ -1319,8 +1538,9 @@
             document.getElementById('modalContent').innerHTML = `
                 <form id="studentForm" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الباص</label>
-                        <input type="text" id="busNumber" value="${student?.busNumber || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم 📱 الآيص</label>
+                        <input type="text" id="aysisNumber" value="${student?.aysisNumber || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                        <p id="aysisError" class="text-red-500 text-xs mt-1 hidden">هذا الرقم مستخدم مسبقاً</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">اسم الطالب</label>
@@ -1358,6 +1578,20 @@
                     </div>
                 </form>
             `;
+            
+            // Add AYSIS number validation
+            document.getElementById('aysisNumber').addEventListener('input', function() {
+                const aysisNumber = this.value.trim();
+                const errorElement = document.getElementById('aysisError');
+                
+                if (aysisNumber && checkDuplicateAysisNumber(aysisNumber, editingId)) {
+                    errorElement.classList.remove('hidden');
+                    this.classList.add('border-red-500');
+                } else {
+                    errorElement.classList.add('hidden');
+                    this.classList.remove('border-red-500');
+                }
+            });
             
             document.getElementById('studentForm').addEventListener('submit', handleStudentSubmit);
             showModal();
@@ -1477,6 +1711,14 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم DOT</label>
                         <input type="text" id="dotNumber" value="${bus?.dotNumber || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ انتهاء DOT</label>
+                        <input type="date" id="dotExpiryDate" value="${bus?.dotExpiryDate || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ انتهاء الملكية</label>
+                        <input type="date" id="ownershipExpiryDate" value="${bus?.ownershipExpiryDate || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                    </div>
                     <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
                         <button type="button" onclick="closeModal()" class="px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 mobile-btn touch-target">
                             إلغاء
@@ -1572,10 +1814,6 @@
                             ${busOptions}
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ انتهاء DOT</label>
-                        <input type="date" id="dotExpiryDate" value="${maintenance?.dotExpiryDate || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base">
-                    </div>
                     <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
                         <button type="button" onclick="closeModal()" class="px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 mobile-btn touch-target">
                             إلغاء
@@ -1665,12 +1903,104 @@
             showModal();
         }
 
-        // Form submission handlers (same as before but with better error handling)
+        function openResignationForm(resignationId = null) {
+            editingId = resignationId;
+            const resignation = resignationId ? appState.resignations.find(r => r.id === resignationId) : null;
+            
+            document.getElementById('modalTitle').textContent = resignationId ? 'تعديل استقالة/إجازة' : 'إضافة استقالة/إجازة جديدة';
+            
+            const driverOptions = appState.drivers.map(d => 
+                `<option value="${d.id}" ${resignation?.personType === 'driver' && resignation?.personId === d.id ? 'selected' : ''}>${d.name}</option>`
+            ).join('');
+            
+            const supervisorOptions = appState.supervisors.map(s => 
+                `<option value="${s.id}" ${resignation?.personType === 'supervisor' && resignation?.personId === s.id ? 'selected' : ''}>${s.name}</option>`
+            ).join('');
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('modalContent').innerHTML = `
+                <form id="resignationForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">النوع</label>
+                        <select id="personType" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                            <option value="">اختر النوع</option>
+                            <option value="driver" ${resignation?.personType === 'driver' ? 'selected' : ''}>سائق</option>
+                            <option value="supervisor" ${resignation?.personType === 'supervisor' ? 'selected' : ''}>مشرفة</option>
+                        </select>
+                    </div>
+                    <div id="personSelect" class="${resignation ? '' : 'hidden'}">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الشخص</label>
+                        <select id="personId" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                            <option value="">اختر الشخص</option>
+                            ${resignation?.personType === 'driver' ? driverOptions : resignation?.personType === 'supervisor' ? supervisorOptions : ''}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الحالة</label>
+                        <select id="status" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                            <option value="">اختر الحالة</option>
+                            <option value="resignation" ${resignation?.status === 'resignation' ? 'selected' : ''}>استقالة</option>
+                            <option value="termination" ${resignation?.status === 'termination' ? 'selected' : ''}>إنهاء خدمات</option>
+                            <option value="leave" ${resignation?.status === 'leave' ? 'selected' : ''}>إجازة</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">التاريخ</label>
+                        <input type="date" id="resignationDate" value="${resignation?.date || today}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">السبب</label>
+                        <textarea id="reason" rows="3" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" placeholder="اكتب السبب...">${resignation?.reason || ''}</textarea>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
+                        <button type="button" onclick="closeModal()" class="px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 mobile-btn touch-target">
+                            إلغاء
+                        </button>
+                        <button type="submit" class="btn-primary px-4 py-3 text-white rounded-md mobile-btn touch-target">
+                            ${resignationId ? 'تحديث' : 'إضافة'}
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            // Handle type change
+            document.getElementById('personType').addEventListener('change', function() {
+                const type = this.value;
+                const personSelect = document.getElementById('personSelect');
+                const personId = document.getElementById('personId');
+                
+                if (type) {
+                    personSelect.classList.remove('hidden');
+                    if (type === 'driver') {
+                        personId.innerHTML = '<option value="">اختر السائق</option>' + driverOptions;
+                    } else {
+                        personId.innerHTML = '<option value="">اختر المشرفة</option>' + supervisorOptions;
+                    }
+                } else {
+                    personSelect.classList.add('hidden');
+                }
+            });
+            
+            document.getElementById('resignationForm').addEventListener('submit', handleResignationSubmit);
+            showModal();
+        }
+
+        // Form submission handlers
         async function handleStudentSubmit(e) {
             e.preventDefault();
             
+            const aysisNumber = document.getElementById('aysisNumber').value.trim();
+            
+            // Check for duplicate AYSIS number
+            if (checkDuplicateAysisNumber(aysisNumber, editingId)) {
+                document.getElementById('aysisError').classList.remove('hidden');
+                document.getElementById('aysisNumber').classList.add('border-red-500');
+                return;
+            }
+            
             const data = {
-                busNumber: document.getElementById('busNumber').value,
+                aysisNumber: aysisNumber,
                 name: document.getElementById('studentName').value,
                 grade: document.getElementById('grade').value,
                 area: document.getElementById('area').value,
@@ -1764,7 +2094,9 @@
                 number: document.getElementById('busNumber').value,
                 company: document.getElementById('company').value,
                 type: document.getElementById('busType').value,
-                dotNumber: document.getElementById('dotNumber').value
+                dotNumber: document.getElementById('dotNumber').value,
+                dotExpiryDate: document.getElementById('dotExpiryDate').value,
+                ownershipExpiryDate: document.getElementById('ownershipExpiryDate').value
             };
             
             try {
@@ -1821,8 +2153,7 @@
             const data = {
                 type: document.getElementById('maintenanceType').value,
                 date: document.getElementById('maintenanceDate').value,
-                busId: document.getElementById('busId').value,
-                dotExpiryDate: document.getElementById('dotExpiryDate').value
+                busId: document.getElementById('busId').value
             };
             
             try {
@@ -1865,32 +2196,45 @@
             }
         }
 
+        async function handleResignationSubmit(e) {
+            e.preventDefault();
+            
+            const data = {
+                personType: document.getElementById('personType').value,
+                personId: document.getElementById('personId').value,
+                status: document.getElementById('status').value,
+                date: document.getElementById('resignationDate').value,
+                reason: document.getElementById('reason').value
+            };
+            
+            try {
+                if (editingId) {
+                    await db.collection('resignations').doc(editingId).update(data);
+                    const index = appState.resignations.findIndex(r => r.id === editingId);
+                    appState.resignations[index] = { id: editingId, ...data };
+                } else {
+                    const docRef = await db.collection('resignations').add(data);
+                    appState.resignations.push({ id: docRef.id, ...data });
+                }
+                
+                closeModal();
+                renderResignationsTable();
+            } catch (error) {
+                console.error('Error saving resignation:', error);
+                alert('حدث خطأ أثناء حفظ البيانات');
+            }
+        }
+
         // Edit functions
-        function editStudent(id) {
-            openStudentForm(id);
-        }
+        function editStudent(id) { openStudentForm(id); }
+        function editSupervisor(id) { openSupervisorForm(id); }
+        function editDriver(id) { openDriverForm(id); }
+        function editBus(id) { openBusForm(id); }
+        function editFuel(id) { openFuelForm(id); }
+        function editMaintenance(id) { openMaintenanceForm(id); }
+        function editResignation(id) { openResignationForm(id); }
 
-        function editSupervisor(id) {
-            openSupervisorForm(id);
-        }
-
-        function editDriver(id) {
-            openDriverForm(id);
-        }
-
-        function editBus(id) {
-            openBusForm(id);
-        }
-
-        function editFuel(id) {
-            openFuelForm(id);
-        }
-
-        function editMaintenance(id) {
-            openMaintenanceForm(id);
-        }
-
-        // Delete functions (same as before but with better confirmations)
+        // Delete functions
         async function deleteStudent(id) {
             if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
                 try {
@@ -1974,100 +2318,292 @@
             }
         }
 
-        // Search/Filter functions (improved for mobile)
-        function filterTable(section) {
-            const searchInput = document.getElementById(`${section.slice(0, -1)}Search`);
-            const searchTerm = searchInput.value.toLowerCase();
-            
-            // Re-render the table with filtered data
-            switch(section) {
-                case 'students':
-                    const filteredStudents = appState.students.filter(student => 
-                        student.name.toLowerCase().includes(searchTerm) ||
-                        student.grade.toLowerCase().includes(searchTerm) ||
-                        student.area.toLowerCase().includes(searchTerm) ||
-                        student.busNumber?.toLowerCase().includes(searchTerm)
-                    );
-                    renderFilteredStudents(filteredStudents);
-                    break;
-                    
-                case 'supervisors':
-                    const filteredSupervisors = appState.supervisors.filter(supervisor => 
-                        supervisor.name.toLowerCase().includes(searchTerm) ||
-                        supervisor.permitNumber.toLowerCase().includes(searchTerm) ||
-                        supervisor.area.toLowerCase().includes(searchTerm)
-                    );
-                    renderFilteredSupervisors(filteredSupervisors);
-                    break;
-                    
-                // Add similar filtering for other sections...
+        async function deleteResignation(id) {
+            if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
+                try {
+                    await db.collection('resignations').doc(id).delete();
+                    appState.resignations = appState.resignations.filter(r => r.id !== id);
+                    renderResignationsTable();
+                } catch (error) {
+                    console.error('Error deleting resignation:', error);
+                    alert('حدث خطأ أثناء الحذف');
+                }
             }
         }
 
-        function renderFilteredStudents(students) {
-            const tbody = document.getElementById('studentsTableBody');
-            tbody.innerHTML = '';
+        // Search/Filter functions
+        function filterTable(section) {
+            const searchInput = document.getElementById(`${section === 'resignations' ? 'resignation' : section.slice(0, -1)}Search`);
+            const searchTerm = searchInput.value.toLowerCase();
             
-            students.forEach(student => {
-                const supervisor = appState.supervisors.find(s => s.id === student.supervisorId);
-                const driver = appState.drivers.find(d => d.id === student.driverId);
-                
-                const row = document.createElement('tr');
-                row.classList.add('slide-in');
-                row.innerHTML = `
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${student.busNumber || '-'}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${student.grade} - ${student.area}</div>
-                        ${student.name}
-                    </td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${student.grade}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${student.area}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${supervisor?.name || '-'}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${driver?.name || '-'}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-1 space-x-reverse">
-                            <button onclick="editStudent('${student.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
-                                <i class="fas fa-edit text-sm"></i>
-                            </button>
-                            <button onclick="deleteStudent('${student.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
-                                <i class="fas fa-trash text-sm"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            // Re-render with current data (simple client-side filtering)
+            switch(section) {
+                case 'students':
+                    renderStudentsTable();
+                    break;
+                case 'supervisors':
+                    renderSupervisorsTable();
+                    break;
+                case 'drivers':
+                    renderDriversTable();
+                    break;
+                case 'buses':
+                    renderBusesTable();
+                    break;
+                case 'fuel':
+                    renderFuelTable();
+                    break;
+                case 'maintenance':
+                    renderMaintenanceTable();
+                    break;
+                case 'resignations':
+                    renderResignationsTable();
+                    break;
+            }
         }
 
-        function renderFilteredSupervisors(supervisors) {
-            const tbody = document.getElementById('supervisorsTableBody');
-            tbody.innerHTML = '';
+        // Export to Excel function
+        function exportToExcel(section) {
+            let data = [];
+            let filename = '';
             
-            supervisors.forEach(supervisor => {
-                const row = document.createElement('tr');
-                row.classList.add('slide-in');
-                row.innerHTML = `
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${supervisor.permitNumber}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${supervisor.phone}</div>
-                        ${supervisor.name}
-                    </td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${supervisor.phone}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${supervisor.expiryDate}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${supervisor.area}</td>
-                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-1 space-x-reverse">
-                            <button onclick="editSupervisor('${supervisor.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
-                                <i class="fas fa-edit text-sm"></i>
-                            </button>
-                            <button onclick="deleteSupervisor('${supervisor.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
-                                <i class="fas fa-trash text-sm"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            switch(section) {
+                case 'students':
+                    data = appState.students.map(student => {
+                        const supervisor = appState.supervisors.find(s => s.id === student.supervisorId);
+                        const driver = appState.drivers.find(d => d.id === student.driverId);
+                        return {
+                            'رقم الآيص': student.aysisNumber || '',
+                            'اسم الطالب': student.name,
+                            'الصف': student.grade,
+                            'المنطقة': student.area,
+                            'المشرفة': supervisor?.name || '',
+                            'السائق': driver?.name || ''
+                        };
+                    });
+                    filename = 'students.xlsx';
+                    break;
+                    
+                case 'supervisors':
+                    data = appState.supervisors.map(supervisor => ({
+                        'رقم التصريح': supervisor.permitNumber,
+                        'اسم المشرفة': supervisor.name,
+                        'الهاتف': supervisor.phone,
+                        'تاريخ انتهاء التصريح': supervisor.expiryDate,
+                        'المنطقة': supervisor.area
+                    }));
+                    filename = 'supervisors.xlsx';
+                    break;
+                    
+                case 'drivers':
+                    data = appState.drivers.map(driver => ({
+                        'رقم التصريح': driver.permitNumber,
+                        'اسم السائق': driver.name,
+                        'الهاتف': driver.phone,
+                        'المنطقة': driver.area,
+                        'تاريخ انتهاء التصريح': driver.expiryDate
+                    }));
+                    filename = 'drivers.xlsx';
+                    break;
+                    
+                case 'buses':
+                    data = appState.buses.map(bus => ({
+                        'رقم الحافلة': bus.number,
+                        'اسم الشركة': bus.company,
+                        'النوع': bus.type,
+                        'رقم DOT': bus.dotNumber,
+                        'تاريخ انتهاء DOT': bus.dotExpiryDate || '',
+                        'تاريخ انتهاء الملكية': bus.ownershipExpiryDate || ''
+                    }));
+                    filename = 'buses.xlsx';
+                    break;
+                    
+                case 'fuel':
+                    data = appState.fuel.map(fuel => {
+                        const bus = appState.buses.find(b => b.id === fuel.busId);
+                        const driver = appState.drivers.find(d => d.id === fuel.driverId);
+                        return {
+                            'رقم الباص': bus?.number || '',
+                            'اسم السائق': driver?.name || '',
+                            'تاريخ التعبئة': fuel.date,
+                            'المبلغ': fuel.amount
+                        };
+                    });
+                    filename = 'fuel.xlsx';
+                    break;
+                    
+                case 'maintenance':
+                    data = appState.maintenance.map(maintenance => {
+                        const bus = appState.buses.find(b => b.id === maintenance.busId);
+                        return {
+                            'نوع الصيانة': maintenance.type,
+                            'تاريخ الصيانة': maintenance.date,
+                            'رقم الحافلة': bus?.number || ''
+                        };
+                    });
+                    filename = 'maintenance.xlsx';
+                    break;
+                    
+                case 'attendance':
+                    data = appState.attendance.map(attendance => {
+                        let person = null;
+                        if (attendance.type === 'driver') {
+                            person = appState.drivers.find(d => d.id === attendance.personId);
+                        } else {
+                            person = appState.supervisors.find(s => s.id === attendance.personId);
+                        }
+                        return {
+                            'الاسم': person?.name || '',
+                            'النوع': attendance.type === 'driver' ? 'سائق' : 'مشرفة',
+                            'التاريخ': attendance.date,
+                            'الحالة': attendance.status === 'present' ? 'حاضر' : 'غائب'
+                        };
+                    });
+                    filename = 'attendance.xlsx';
+                    break;
+                    
+                case 'resignations':
+                    data = appState.resignations.map(resignation => {
+                        let person = null;
+                        if (resignation.personType === 'driver') {
+                            person = appState.drivers.find(d => d.id === resignation.personId);
+                        } else {
+                            person = appState.supervisors.find(s => s.id === resignation.personId);
+                        }
+                        
+                        const statusText = {
+                            'resignation': 'استقالة',
+                            'termination': 'إنهاء خدمات',
+                            'leave': 'إجازة'
+                        }[resignation.status] || resignation.status;
+                        
+                        return {
+                            'الاسم': person?.name || '',
+                            'النوع': resignation.personType === 'driver' ? 'سائق' : 'مشرفة',
+                            'الحالة': statusText,
+                            'التاريخ': resignation.date,
+                            'السبب': resignation.reason || ''
+                        };
+                    });
+                    filename = 'resignations.xlsx';
+                    break;
+            }
+            
+            if (data.length === 0) {
+                alert('لا توجد بيانات للتصدير');
+                return;
+            }
+            
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "البيانات");
+            XLSX.writeFile(wb, filename);
+        }
+
+        // Import from Excel function
+        function importExcel(section, input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    processImportedData(section, jsonData);
+                } catch (error) {
+                    console.error('Error reading Excel file:', error);
+                    alert('خطأ في قراءة ملف Excel');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            
+            // Reset input
+            input.value = '';
+        }
+
+        async function processImportedData(section, data) {
+            if (data.length === 0) {
+                alert('الملف فارغ');
+                return;
+            }
+            
+            try {
+                let imported = 0;
+                
+                for (const row of data) {
+                    let documentData = {};
+                    
+                    switch(section) {
+                        case 'students':
+                            documentData = {
+                                aysisNumber: row['رقم الآيص'] || row['رقم 📱 الآيص'] || '',
+                                name: row['اسم الطالب'] || '',
+                                grade: row['الصف'] || '',
+                                area: row['المنطقة'] || '',
+                                supervisorId: '', // These would need to be matched by name
+                                driverId: ''
+                            };
+                            break;
+                            
+                        case 'supervisors':
+                            documentData = {
+                                permitNumber: row['رقم التصريح'] || '',
+                                name: row['اسم المشرفة'] || '',
+                                phone: row['الهاتف'] || '',
+                                expiryDate: row['تاريخ انتهاء التصريح'] || '',
+                                area: row['المنطقة'] || ''
+                            };
+                            break;
+                            
+                        case 'drivers':
+                            documentData = {
+                                permitNumber: row['رقم التصريح'] || '',
+                                name: row['اسم السائق'] || '',
+                                phone: row['الهاتف'] || '',
+                                area: row['المنطقة'] || '',
+                                expiryDate: row['تاريخ انتهاء التصريح'] || ''
+                            };
+                            break;
+                            
+                        case 'buses':
+                            documentData = {
+                                number: row['رقم الحافلة'] || '',
+                                company: row['اسم الشركة'] || '',
+                                type: row['النوع'] || '',
+                                dotNumber: row['رقم DOT'] || '',
+                                dotExpiryDate: row['تاريخ انتهاء DOT'] || '',
+                                ownershipExpiryDate: row['تاريخ انتهاء الملكية'] || ''
+                            };
+                            break;
+                            
+                        default:
+                            continue;
+                    }
+                    
+                    // Skip empty rows
+                    if (!documentData.name && !documentData.number) continue;
+                    
+                    // Add to database
+                    const docRef = await db.collection(section).add(documentData);
+                    appState[section].push({ id: docRef.id, ...documentData });
+                    imported++;
+                }
+                
+                alert(`تم استيراد ${imported} سجل بنجاح`);
+                
+                // Re-render the current section
+                loadSectionData(currentSection);
+                updateDashboardStats();
+                
+            } catch (error) {
+                console.error('Error importing data:', error);
+                alert('حدث خطأ أثناء استيراد البيانات');
+            }
         }
 
         // Modal functions
