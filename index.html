@@ -1,0 +1,2088 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة النقل المدرسي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#f3f4f6'
+                    },
+                    fontFamily: {
+                        arabic: ['Tajawal', 'Arial', 'sans-serif']
+                    },
+                    screens: {
+                        'xs': '475px',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Tajawal', Arial, sans-serif;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .slide-in-left {
+            animation: slideInLeft 0.3s ease-out;
+        }
+        
+        .bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #5D5CDE, #667eea);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #4c4bcd, #5a6fd8);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(93, 92, 222, 0.4);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #5D5CDE;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .dark {
+            background-color: #181818;
+            color: white;
+        }
+        
+        .dark .bg-white {
+            background-color: #2d2d2d;
+        }
+        
+        .dark .text-gray-900 {
+            color: #f3f4f6;
+        }
+        
+        .dark .text-gray-600 {
+            color: #d1d5db;
+        }
+        
+        .dark .border-gray-200 {
+            border-color: #374151;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #1f2937;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: #374151;
+        }
+
+        /* Mobile sidebar overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+
+        /* Touch improvements */
+        .touch-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Responsive table improvements */
+        .table-responsive {
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Card responsive improvements */
+        .responsive-card {
+            min-height: 120px;
+        }
+
+        /* Better mobile navigation */
+        .mobile-nav-active {
+            background-color: #5D5CDE;
+            color: white;
+        }
+
+        /* Smooth transitions for mobile menu */
+        .sidebar-mobile {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar-mobile.open {
+            transform: translateX(0);
+        }
+
+        /* Better focus indicators for accessibility */
+        .focus\:ring-primary:focus {
+            --tw-ring-color: #5D5CDE;
+        }
+
+        /* Improved mobile form styles */
+        .mobile-form-input {
+            touch-action: manipulation;
+        }
+
+        /* Better mobile button styles */
+        .mobile-btn {
+            padding: 12px 16px;
+            font-size: 16px;
+            border-radius: 8px;
+        }
+
+        /* Enhanced mobile modal */
+        .mobile-modal {
+            margin: 16px;
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center gradient-bg p-4">
+        <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md bounce-in">
+            <div class="text-center mb-6 sm:mb-8">
+                <div class="mx-auto h-12 w-12 sm:h-16 sm:w-16 bg-primary rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-bus text-white text-lg sm:text-2xl"></i>
+                </div>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">نظام إدارة النقل المدرسي</h1>
+                <p class="text-gray-600 dark:text-gray-300 mt-2 text-sm sm:text-base">مرحباً بك في نظام إدارة النقل المدرسي</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-4 sm:space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">اسم المستخدم</label>
+                    <input type="text" id="username" class="mobile-form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base" placeholder="أدخل اسم المستخدم">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">كلمة المرور</label>
+                    <input type="password" id="password" class="mobile-form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base" placeholder="أدخل كلمة المرور">
+                </div>
+                
+                <button type="submit" class="w-full btn-primary text-white py-3 px-6 rounded-lg font-medium text-base mobile-btn touch-target">
+                    <span id="loginText">تسجيل الدخول</span>
+                    <span id="loginLoading" class="loading hidden"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Mobile Navigation Overlay -->
+        <div id="sidebarOverlay" class="sidebar-overlay hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+        <!-- Navigation Header -->
+        <nav class="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+            <div class="px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-3 sm:py-4">
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <!-- Mobile menu button -->
+                        <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 touch-target">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        
+                        <div class="h-8 w-8 sm:h-10 sm:w-10 bg-primary rounded-full flex items-center justify-center">
+                            <i class="fas fa-bus text-white text-sm sm:text-base"></i>
+                        </div>
+                        <h1 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white hidden sm:block">نظام إدارة النقل المدرسي</h1>
+                        <h1 class="text-sm font-bold text-gray-900 dark:text-white sm:hidden">النقل المدرسي</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
+                        <span class="text-gray-600 dark:text-gray-300 text-sm sm:text-base hidden xs:block">مرحباً، Admin</span>
+                        <button id="logoutBtn" class="text-red-600 hover:text-red-800 transition-colors p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 touch-target">
+                            <i class="fas fa-sign-out-alt text-sm sm:text-base"></i>
+                            <span class="hidden sm:inline mr-1">تسجيل خروج</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex relative">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="sidebar-mobile lg:sidebar-desktop fixed lg:sticky top-0 lg:top-16 left-0 z-50 lg:z-auto w-64 bg-white dark:bg-gray-800 shadow-lg h-screen lg:h-[calc(100vh-4rem)] overflow-y-auto">
+                <!-- Mobile sidebar header -->
+                <div class="lg:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">القائمة</h2>
+                    <button id="closeSidebar" class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 touch-target">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <nav class="mt-4 lg:mt-8">
+                    <div class="px-4 space-y-1 sm:space-y-2">
+                        <button class="nav-item w-full text-right px-3 sm:px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white rounded-lg transition-colors touch-target" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt ml-3 text-sm sm:text-base"></i>
+                            <span class="text-sm sm:text-base">لوحة التحكم</span>
+                        </button>
+                        <button class="nav-item w-full text-right px-3 sm:px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white rounded-lg transition-colors touch-target" data-section="students">
+                            <i class="fas fa-user-graduate ml-3 text-sm sm:text-base"></i>
+                            <span class="text-sm sm:text-base">الطلاب</span>
+                        </button>
+                        <button class="nav-item w-full text-right px-3 sm:px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white rounded-lg transition-colors touch-target" data-section="supervisors">
+                            <i class="fas fa-user-tie ml-3 text-sm sm:text-base"></i>
+                            <span class="text-sm sm:text-base">تصاريح المشرفات</span>
+                        </button>
+                        <button class="nav-item w-full text-right px-3 sm:px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white rounded-lg transition-colors touch-target" data-section="drivers">
+                            <i class="fas fa-id-card ml-3 text-sm sm:text-base"></i>
+                            <span class="text-sm sm:text-base">تصاريح السائقين</span>
+                        </button>
+                        <button class="nav-item w-full text-right px-3 sm:px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white rounded-lg transition-colors touch-target" data-section="buses">
+                            <i class="fas fa-bus ml-3 text-sm sm:text-base"></i>
+                            <span class="text-sm sm:text-base">تصاريح الحافلات</span>
+                        </button>
+                        <button class="nav-item w-full text-right px-3 sm:px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white rounded-lg transition-colors touch-target" data-section="fuel">
+                            <i class="fas fa-gas-pump ml-3 text-sm sm:text-base"></i>
+                            <span class="text-sm sm:text-base">الديزل</span>
+                        </button>
+                        <button class="nav-item w-full text-right px-3 sm:px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white rounded-lg transition-colors touch-target" data-section="maintenance">
+                            <i class="fas fa-tools ml-3 text-sm sm:text-base"></i>
+                            <span class="text-sm sm:text-base">الصيانة</span>
+                        </button>
+                        <button class="nav-item w-full text-right px-3 sm:px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white rounded-lg transition-colors touch-target" data-section="attendance">
+                            <i class="fas fa-clock ml-3 text-sm sm:text-base"></i>
+                            <span class="text-sm sm:text-base">الحضور والانصراف</span>
+                        </button>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 lg:mr-64 p-4 sm:p-6 lg:p-8">
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="section fade-in">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-6 sm:mb-8">لوحة التحكم</h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg card-hover responsive-card">
+                            <div class="flex items-center">
+                                <div class="p-2 sm:p-3 rounded-full bg-blue-100 dark:bg-blue-900">
+                                    <i class="fas fa-user-graduate text-blue-600 dark:text-blue-300 text-sm sm:text-base"></i>
+                                </div>
+                                <div class="mr-3 sm:mr-4">
+                                    <p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">إجمالي الطلاب</p>
+                                    <p class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white" id="totalStudents">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg card-hover responsive-card">
+                            <div class="flex items-center">
+                                <div class="p-2 sm:p-3 rounded-full bg-green-100 dark:bg-green-900">
+                                    <i class="fas fa-bus text-green-600 dark:text-green-300 text-sm sm:text-base"></i>
+                                </div>
+                                <div class="mr-3 sm:mr-4">
+                                    <p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">عدد الحافلات</p>
+                                    <p class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white" id="totalBuses">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg card-hover responsive-card">
+                            <div class="flex items-center">
+                                <div class="p-2 sm:p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
+                                    <i class="fas fa-id-card text-yellow-600 dark:text-yellow-300 text-sm sm:text-base"></i>
+                                </div>
+                                <div class="mr-3 sm:mr-4">
+                                    <p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">عدد السائقين</p>
+                                    <p class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white" id="totalDrivers">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg card-hover responsive-card">
+                            <div class="flex items-center">
+                                <div class="p-2 sm:p-3 rounded-full bg-purple-100 dark:bg-purple-900">
+                                    <i class="fas fa-user-tie text-purple-600 dark:text-purple-300 text-sm sm:text-base"></i>
+                                </div>
+                                <div class="mr-3 sm:mr-4">
+                                    <p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">عدد المشرفات</p>
+                                    <p class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white" id="totalSupervisors">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Students Section -->
+                <div id="students" class="section hidden">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">إدارة الطلاب</h2>
+                        <button id="addStudentBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                            <i class="fas fa-plus ml-2"></i>إضافة طالب
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+                        <div class="mb-4">
+                            <input type="text" id="studentSearch" placeholder="البحث عن طالب..." class="mobile-form-input w-full px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">رقم الباص</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">اسم الطالب</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">الصف</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">المنطقة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">المشرفة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">السائق</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">العمليات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supervisors Section -->
+                <div id="supervisors" class="section hidden">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">تصاريح المشرفات</h2>
+                        <button id="addSupervisorBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                            <i class="fas fa-plus ml-2"></i>إضافة مشرفة
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+                        <div class="mb-4">
+                            <input type="text" id="supervisorSearch" placeholder="البحث عن مشرفة..." class="mobile-form-input w-full px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">رقم التصريح</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">اسم المشرفة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">الهاتف</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">تاريخ انتهاء التصريح</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">المنطقة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">العمليات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="supervisorsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drivers Section -->
+                <div id="drivers" class="section hidden">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">تصاريح السائقين</h2>
+                        <button id="addDriverBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                            <i class="fas fa-plus ml-2"></i>إضافة سائق
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+                        <div class="mb-4">
+                            <input type="text" id="driverSearch" placeholder="البحث عن سائق..." class="mobile-form-input w-full px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">رقم التصريح</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">اسم السائق</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">الهاتف</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">المنطقة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">تاريخ انتهاء التصريح</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">العمليات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="driversTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buses Section -->
+                <div id="buses" class="section hidden">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">تصاريح الحافلات</h2>
+                        <button id="addBusBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                            <i class="fas fa-plus ml-2"></i>إضافة حافلة
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+                        <div class="mb-4">
+                            <input type="text" id="busSearch" placeholder="البحث عن حافلة..." class="mobile-form-input w-full px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">رقم الحافلة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">اسم الشركة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">النوع</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">رقم DOT</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">العمليات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="busesTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fuel Section -->
+                <div id="fuel" class="section hidden">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">إدارة الديزل</h2>
+                        <button id="addFuelBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                            <i class="fas fa-plus ml-2"></i>إضافة تعبئة
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">الأكثر صرفاً</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="topFuelConsumers">
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+                        <div class="mb-4">
+                            <input type="text" id="fuelSearch" placeholder="البحث في سجلات الديزل..." class="mobile-form-input w-full px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">رقم الباص</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">اسم السائق</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">تاريخ التعبئة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">المبلغ</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">العمليات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fuelTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maintenance Section -->
+                <div id="maintenance" class="section hidden">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">إدارة الصيانة</h2>
+                        <button id="addMaintenanceBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                            <i class="fas fa-plus ml-2"></i>إضافة صيانة
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+                        <div class="mb-4">
+                            <input type="text" id="maintenanceSearch" placeholder="البحث في سجلات الصيانة..." class="mobile-form-input w-full px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">نوع الصيانة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">تاريخ الصيانة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">رقم الحافلة</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">رقم DOT</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">تاريخ انتهاء DOT</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">العمليات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="maintenanceTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Section -->
+                <div id="attendance" class="section hidden">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">الحضور والانصراف</h2>
+                        <button id="addAttendanceBtn" class="btn-primary text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg mobile-btn touch-target">
+                            <i class="fas fa-plus ml-2"></i>تسجيل حضور
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">حضور السائقين</h3>
+                            <div class="table-responsive">
+                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead class="bg-gray-50 dark:bg-gray-700">
+                                        <tr>
+                                            <th class="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">اسم السائق</th>
+                                            <th class="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">التاريخ</th>
+                                            <th class="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">الحالة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="driversAttendanceBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">حضور المشرفات</h3>
+                            <div class="table-responsive">
+                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead class="bg-gray-50 dark:bg-gray-700">
+                                        <tr>
+                                            <th class="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">اسم المشرفة</th>
+                                            <th class="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">التاريخ</th>
+                                            <th class="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">الحالة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="supervisorsAttendanceBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal for Forms -->
+    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mobile-modal bounce-in">
+            <div class="p-4 sm:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modalTitle" class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">عنوان النموذج</h3>
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 touch-target">
+                        <i class="fas fa-times text-sm sm:text-base"></i>
+                    </button>
+                </div>
+                <div id="modalContent">
+                    <!-- Modal content will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDWX7eDpIDcAnyLRfRtJorCLJ4T74d3me4",
+            authDomain: "transportation-c1152.firebaseapp.com",
+            databaseURL: "https://transportation-c1152-default-rtdb.firebaseio.com",
+            projectId: "transportation-c1152",
+            storageBucket: "transportation-c1152.firebasestorage.app",
+            messagingSenderId: "632274574767",
+            appId: "1:632274574767:web:a8dda8b750743e13ae635a",
+            measurementId: "G-QJ18MLDMHF"
+            
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Global variables
+        let currentSection = 'dashboard';
+        let editingId = null;
+        let sidebarOpen = false;
+
+        // Application State
+        const appState = {
+            students: [],
+            supervisors: [],
+            drivers: [],
+            buses: [],
+            fuel: [],
+            maintenance: [],
+            attendance: []
+        };
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            setupEventListeners();
+            loadInitialData();
+            setupResponsiveHandlers();
+        }
+
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            
+            // Mobile menu toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', toggleSidebar);
+            document.getElementById('closeSidebar').addEventListener('click', closeSidebar);
+            
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    showSection(section);
+                    if (window.innerWidth < 1024) {
+                        closeSidebar();
+                    }
+                });
+            });
+            
+            // Modal
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('modal').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+            
+            // Add buttons
+            document.getElementById('addStudentBtn').addEventListener('click', () => openStudentForm());
+            document.getElementById('addSupervisorBtn').addEventListener('click', () => openSupervisorForm());
+            document.getElementById('addDriverBtn').addEventListener('click', () => openDriverForm());
+            document.getElementById('addBusBtn').addEventListener('click', () => openBusForm());
+            document.getElementById('addFuelBtn').addEventListener('click', () => openFuelForm());
+            document.getElementById('addMaintenanceBtn').addEventListener('click', () => openMaintenanceForm());
+            document.getElementById('addAttendanceBtn').addEventListener('click', () => openAttendanceForm());
+            
+            // Search functionality
+            document.getElementById('studentSearch').addEventListener('input', () => filterTable('students'));
+            document.getElementById('supervisorSearch').addEventListener('input', () => filterTable('supervisors'));
+            document.getElementById('driverSearch').addEventListener('input', () => filterTable('drivers'));
+            document.getElementById('busSearch').addEventListener('input', () => filterTable('buses'));
+            document.getElementById('fuelSearch').addEventListener('input', () => filterTable('fuel'));
+            document.getElementById('maintenanceSearch').addEventListener('input', () => filterTable('maintenance'));
+        }
+
+        function setupResponsiveHandlers() {
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    closeSidebar();
+                }
+            });
+
+            // Handle touch events for mobile sidebar
+            let touchStartX = null;
+            document.addEventListener('touchstart', function(e) {
+                touchStartX = e.touches[0].clientX;
+            });
+
+            document.addEventListener('touchmove', function(e) {
+                if (touchStartX === null) return;
+                
+                const touchX = e.touches[0].clientX;
+                const diffX = touchStartX - touchX;
+                
+                // Swipe left to close sidebar (only on mobile)
+                if (diffX > 50 && sidebarOpen && window.innerWidth < 1024) {
+                    closeSidebar();
+                    touchStartX = null;
+                }
+            });
+
+            document.addEventListener('touchend', function() {
+                touchStartX = null;
+            });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebarOpen) {
+                closeSidebar();
+            } else {
+                sidebar.classList.add('open');
+                sidebar.classList.add('slide-in-left');
+                overlay.classList.remove('hidden');
+                sidebarOpen = true;
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.remove('open');
+            overlay.classList.add('hidden');
+            sidebarOpen = false;
+            document.body.style.overflow = '';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginText = document.getElementById('loginText');
+            const loginLoading = document.getElementById('loginLoading');
+            
+            if (username === 'admin' && password === '606486') {
+                loginText.classList.add('hidden');
+                loginLoading.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    document.getElementById('loginPage').classList.add('hidden');
+                    document.getElementById('mainApp').classList.remove('hidden');
+                    showSection('dashboard');
+                }, 1000);
+            } else {
+                alert('اسم المستخدم أو كلمة المرور غير صحيحة');
+            }
+        }
+
+        function handleLogout() {
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('loginText').classList.remove('hidden');
+            document.getElementById('loginLoading').classList.add('hidden');
+            closeSidebar();
+        }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName).classList.remove('hidden');
+            document.getElementById(sectionName).classList.add('fade-in');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('bg-primary', 'text-white', 'mobile-nav-active');
+                item.classList.add('text-gray-700', 'dark:text-gray-300');
+            });
+            
+            const activeNav = document.querySelector(`[data-section="${sectionName}"]`);
+            activeNav.classList.add('bg-primary', 'text-white', 'mobile-nav-active');
+            activeNav.classList.remove('text-gray-700', 'dark:text-gray-300');
+            
+            currentSection = sectionName;
+            
+            // Load section data
+            loadSectionData(sectionName);
+        }
+
+        async function loadInitialData() {
+            try {
+                await Promise.all([
+                    loadStudents(),
+                    loadSupervisors(),
+                    loadDrivers(),
+                    loadBuses(),
+                    loadFuel(),
+                    loadMaintenance(),
+                    loadAttendance()
+                ]);
+                updateDashboardStats();
+            } catch (error) {
+                console.error('Error loading initial data:', error);
+            }
+        }
+
+        async function loadSectionData(section) {
+            switch(section) {
+                case 'dashboard':
+                    updateDashboardStats();
+                    break;
+                case 'students':
+                    renderStudentsTable();
+                    break;
+                case 'supervisors':
+                    renderSupervisorsTable();
+                    break;
+                case 'drivers':
+                    renderDriversTable();
+                    break;
+                case 'buses':
+                    renderBusesTable();
+                    break;
+                case 'fuel':
+                    renderFuelTable();
+                    updateTopFuelConsumers();
+                    break;
+                case 'maintenance':
+                    renderMaintenanceTable();
+                    break;
+                case 'attendance':
+                    renderAttendanceTable();
+                    break;
+            }
+        }
+
+        // Data loading functions (same as before but with better error handling)
+        async function loadStudents() {
+            try {
+                const snapshot = await db.collection('students').get();
+                appState.students = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            } catch (error) {
+                console.error('Error loading students:', error);
+                appState.students = [];
+            }
+        }
+
+        async function loadSupervisors() {
+            try {
+                const snapshot = await db.collection('supervisors').get();
+                appState.supervisors = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            } catch (error) {
+                console.error('Error loading supervisors:', error);
+                appState.supervisors = [];
+            }
+        }
+
+        async function loadDrivers() {
+            try {
+                const snapshot = await db.collection('drivers').get();
+                appState.drivers = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            } catch (error) {
+                console.error('Error loading drivers:', error);
+                appState.drivers = [];
+            }
+        }
+
+        async function loadBuses() {
+            try {
+                const snapshot = await db.collection('buses').get();
+                appState.buses = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            } catch (error) {
+                console.error('Error loading buses:', error);
+                appState.buses = [];
+            }
+        }
+
+        async function loadFuel() {
+            try {
+                const snapshot = await db.collection('fuel').get();
+                appState.fuel = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            } catch (error) {
+                console.error('Error loading fuel:', error);
+                appState.fuel = [];
+            }
+        }
+
+        async function loadMaintenance() {
+            try {
+                const snapshot = await db.collection('maintenance').get();
+                appState.maintenance = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            } catch (error) {
+                console.error('Error loading maintenance:', error);
+                appState.maintenance = [];
+            }
+        }
+
+        async function loadAttendance() {
+            try {
+                const snapshot = await db.collection('attendance').get();
+                appState.attendance = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            } catch (error) {
+                console.error('Error loading attendance:', error);
+                appState.attendance = [];
+            }
+        }
+
+        // Dashboard functions
+        function updateDashboardStats() {
+            document.getElementById('totalStudents').textContent = appState.students.length;
+            document.getElementById('totalBuses').textContent = appState.buses.length;
+            document.getElementById('totalDrivers').textContent = appState.drivers.length;
+            document.getElementById('totalSupervisors').textContent = appState.supervisors.length;
+        }
+
+        // Table rendering functions (updated for responsive design)
+        function renderStudentsTable() {
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = '';
+            
+            appState.students.forEach(student => {
+                const supervisor = appState.supervisors.find(s => s.id === student.supervisorId);
+                const driver = appState.drivers.find(d => d.id === student.driverId);
+                
+                const row = document.createElement('tr');
+                row.classList.add('slide-in');
+                row.innerHTML = `
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${student.busNumber || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${student.grade} - ${student.area}</div>
+                        ${student.name}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${student.grade}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${student.area}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${supervisor?.name || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${driver?.name || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-1 space-x-reverse">
+                            <button onclick="editStudent('${student.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteStudent('${student.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderSupervisorsTable() {
+            const tbody = document.getElementById('supervisorsTableBody');
+            tbody.innerHTML = '';
+            
+            appState.supervisors.forEach(supervisor => {
+                const row = document.createElement('tr');
+                row.classList.add('slide-in');
+                row.innerHTML = `
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${supervisor.permitNumber}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${supervisor.phone}</div>
+                        ${supervisor.name}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${supervisor.phone}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${supervisor.expiryDate}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${supervisor.area}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-1 space-x-reverse">
+                            <button onclick="editSupervisor('${supervisor.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteSupervisor('${supervisor.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderDriversTable() {
+            const tbody = document.getElementById('driversTableBody');
+            tbody.innerHTML = '';
+            
+            appState.drivers.forEach(driver => {
+                const row = document.createElement('tr');
+                row.classList.add('slide-in');
+                row.innerHTML = `
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${driver.permitNumber}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${driver.phone}</div>
+                        ${driver.name}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${driver.phone}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${driver.area}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${driver.expiryDate}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-1 space-x-reverse">
+                            <button onclick="editDriver('${driver.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteDriver('${driver.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderBusesTable() {
+            const tbody = document.getElementById('busesTableBody');
+            tbody.innerHTML = '';
+            
+            appState.buses.forEach(bus => {
+                const row = document.createElement('tr');
+                row.classList.add('slide-in');
+                row.innerHTML = `
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${bus.number}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${bus.type}</div>
+                        ${bus.company}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${bus.type}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${bus.dotNumber}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-1 space-x-reverse">
+                            <button onclick="editBus('${bus.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteBus('${bus.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderFuelTable() {
+            const tbody = document.getElementById('fuelTableBody');
+            tbody.innerHTML = '';
+            
+            appState.fuel.forEach(fuel => {
+                const bus = appState.buses.find(b => b.id === fuel.busId);
+                const driver = appState.drivers.find(d => d.id === fuel.driverId);
+                
+                const row = document.createElement('tr');
+                row.classList.add('slide-in');
+                row.innerHTML = `
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${bus?.number || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${driver?.name || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${driver?.name || '-'}</div>
+                        ${fuel.date}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-semibold">${fuel.amount} ر.س</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-1 space-x-reverse">
+                            <button onclick="editFuel('${fuel.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteFuel('${fuel.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderMaintenanceTable() {
+            const tbody = document.getElementById('maintenanceTableBody');
+            tbody.innerHTML = '';
+            
+            appState.maintenance.forEach(maintenance => {
+                const bus = appState.buses.find(b => b.id === maintenance.busId);
+                
+                const row = document.createElement('tr');
+                row.classList.add('slide-in');
+                row.innerHTML = `
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${maintenance.type}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">باص: ${bus?.number || '-'}</div>
+                        ${maintenance.date}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${bus?.number || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${bus?.dotNumber || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${maintenance.dotExpiryDate || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-1 space-x-reverse">
+                            <button onclick="editMaintenance('${maintenance.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteMaintenance('${maintenance.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderAttendanceTable() {
+            const driversBody = document.getElementById('driversAttendanceBody');
+            const supervisorsBody = document.getElementById('supervisorsAttendanceBody');
+            
+            driversBody.innerHTML = '';
+            supervisorsBody.innerHTML = '';
+            
+            // Filter attendance for today
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Drivers attendance
+            const driversAttendance = appState.attendance.filter(a => a.type === 'driver' && a.date === today);
+            driversAttendance.forEach(attendance => {
+                const driver = appState.drivers.find(d => d.id === attendance.personId);
+                if (driver) {
+                    const row = document.createElement('tr');
+                    row.classList.add('slide-in');
+                    row.innerHTML = `
+                        <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${attendance.date}</div>
+                            ${driver.name}
+                        </td>
+                        <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${attendance.date}</td>
+                        <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-sm">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${attendance.status === 'present' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}">
+                                ${attendance.status === 'present' ? 'حاضر' : 'غائب'}
+                            </span>
+                        </td>
+                    `;
+                    driversBody.appendChild(row);
+                }
+            });
+            
+            // Supervisors attendance
+            const supervisorsAttendance = appState.attendance.filter(a => a.type === 'supervisor' && a.date === today);
+            supervisorsAttendance.forEach(attendance => {
+                const supervisor = appState.supervisors.find(s => s.id === attendance.personId);
+                if (supervisor) {
+                    const row = document.createElement('tr');
+                    row.classList.add('slide-in');
+                    row.innerHTML = `
+                        <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${attendance.date}</div>
+                            ${supervisor.name}
+                        </td>
+                        <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${attendance.date}</td>
+                        <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-sm">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${attendance.status === 'present' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}">
+                                ${attendance.status === 'present' ? 'حاضر' : 'غائب'}
+                            </span>
+                        </td>
+                    `;
+                    supervisorsBody.appendChild(row);
+                }
+            });
+        }
+
+        function updateTopFuelConsumers() {
+            const container = document.getElementById('topFuelConsumers');
+            container.innerHTML = '';
+            
+            // Calculate fuel consumption by bus
+            const consumption = {};
+            appState.fuel.forEach(fuel => {
+                const bus = appState.buses.find(b => b.id === fuel.busId);
+                if (bus) {
+                    if (!consumption[bus.number]) {
+                        consumption[bus.number] = 0;
+                    }
+                    consumption[bus.number] += parseFloat(fuel.amount) || 0;
+                }
+            });
+            
+            // Sort and get top 3
+            const sorted = Object.entries(consumption)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 3);
+            
+            sorted.forEach(([busNumber, amount], index) => {
+                const div = document.createElement('div');
+                div.classList.add('bg-gray-50', 'dark:bg-gray-700', 'p-3', 'sm:p-4', 'rounded-lg', 'slide-in');
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">باص رقم ${busNumber}</span>
+                        <span class="text-base sm:text-lg font-bold text-primary">${amount.toFixed(2)} ر.س</span>
+                    </div>
+                    <div class="mt-2">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">المركز ${index + 1}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Form functions (updated for responsive design)
+        function openStudentForm(studentId = null) {
+            editingId = studentId;
+            const student = studentId ? appState.students.find(s => s.id === studentId) : null;
+            
+            document.getElementById('modalTitle').textContent = studentId ? 'تعديل طالب' : 'إضافة طالب جديد';
+            
+            const supervisorOptions = appState.supervisors.map(s => 
+                `<option value="${s.id}" ${student?.supervisorId === s.id ? 'selected' : ''}>${s.name}</option>`
+            ).join('');
+            
+            const driverOptions = appState.drivers.map(d => 
+                `<option value="${d.id}" ${student?.driverId === d.id ? 'selected' : ''}>${d.name}</option>`
+            ).join('');
+            
+            document.getElementById('modalContent').innerHTML = `
+                <form id="studentForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الباص</label>
+                        <input type="text" id="busNumber" value="${student?.busNumber || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">اسم الطالب</label>
+                        <input type="text" id="studentName" value="${student?.name || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الصف</label>
+                        <input type="text" id="grade" value="${student?.grade || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المنطقة</label>
+                        <input type="text" id="area" value="${student?.area || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المشرفة</label>
+                        <select id="supervisorId" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                            <option value="">اختر المشرفة</option>
+                            ${supervisorOptions}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">السائق</label>
+                        <select id="driverId" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                            <option value="">اختر السائق</option>
+                            ${driverOptions}
+                        </select>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
+                        <button type="button" onclick="closeModal()" class="px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 mobile-btn touch-target">
+                            إلغاء
+                        </button>
+                        <button type="submit" class="btn-primary px-4 py-3 text-white rounded-md mobile-btn touch-target">
+                            ${studentId ? 'تحديث' : 'إضافة'}
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('studentForm').addEventListener('submit', handleStudentSubmit);
+            showModal();
+        }
+
+        function openSupervisorForm(supervisorId = null) {
+            editingId = supervisorId;
+            const supervisor = supervisorId ? appState.supervisors.find(s => s.id === supervisorId) : null;
+            
+            document.getElementById('modalTitle').textContent = supervisorId ? 'تعديل مشرفة' : 'إضافة مشرفة جديدة';
+            
+            document.getElementById('modalContent').innerHTML = `
+                <form id="supervisorForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم التصريح</label>
+                        <input type="text" id="permitNumber" value="${supervisor?.permitNumber || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">اسم المشرفة</label>
+                        <input type="text" id="supervisorName" value="${supervisor?.name || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الهاتف</label>
+                        <input type="tel" id="phone" value="${supervisor?.phone || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ انتهاء التصريح</label>
+                        <input type="date" id="expiryDate" value="${supervisor?.expiryDate || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المنطقة</label>
+                        <input type="text" id="area" value="${supervisor?.area || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
+                        <button type="button" onclick="closeModal()" class="px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 mobile-btn touch-target">
+                            إلغاء
+                        </button>
+                        <button type="submit" class="btn-primary px-4 py-3 text-white rounded-md mobile-btn touch-target">
+                            ${supervisorId ? 'تحديث' : 'إضافة'}
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('supervisorForm').addEventListener('submit', handleSupervisorSubmit);
+            showModal();
+        }
+
+        function openDriverForm(driverId = null) {
+            editingId = driverId;
+            const driver = driverId ? appState.drivers.find(d => d.id === driverId) : null;
+            
+            document.getElementById('modalTitle').textContent = driverId ? 'تعديل سائق' : 'إضافة سائق جديد';
+            
+            document.getElementById('modalContent').innerHTML = `
+                <form id="driverForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم التصريح</label>
+                        <input type="text" id="permitNumber" value="${driver?.permitNumber || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">اسم السائق</label>
+                        <input type="text" id="driverName" value="${driver?.name || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الهاتف</label>
+                        <input type="tel" id="phone" value="${driver?.phone || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المنطقة</label>
+                        <input type="text" id="area" value="${driver?.area || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ انتهاء التصريح</label>
+                        <input type="date" id="expiryDate" value="${driver?.expiryDate || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
+                        <button type="button" onclick="closeModal()" class="px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 mobile-btn touch-target">
+                            إلغاء
+                        </button>
+                        <button type="submit" class="btn-primary px-4 py-3 text-white rounded-md mobile-btn touch-target">
+                            ${driverId ? 'تحديث' : 'إضافة'}
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('driverForm').addEventListener('submit', handleDriverSubmit);
+            showModal();
+        }
+
+        function openBusForm(busId = null) {
+            editingId = busId;
+            const bus = busId ? appState.buses.find(b => b.id === busId) : null;
+            
+            document.getElementById('modalTitle').textContent = busId ? 'تعديل حافلة' : 'إضافة حافلة جديدة';
+            
+            document.getElementById('modalContent').innerHTML = `
+                <form id="busForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الحافلة</label>
+                        <input type="text" id="busNumber" value="${bus?.number || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">اسم الشركة</label>
+                        <input type="text" id="company" value="${bus?.company || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">النوع</label>
+                        <select id="busType" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                            <option value="">اختر النوع</option>
+                            <option value="اشوك" ${bus?.type === 'اشوك' ? 'selected' : ''}>اشوك</option>
+                            <option value="روزا" ${bus?.type === 'روزا' ? 'selected' : ''}>روزا</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم DOT</label>
+                        <input type="text" id="dotNumber" value="${bus?.dotNumber || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
+                        <button type="button" onclick="closeModal()" class="px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 mobile-btn touch-target">
+                            إلغاء
+                        </button>
+                        <button type="submit" class="btn-primary px-4 py-3 text-white rounded-md mobile-btn touch-target">
+                            ${busId ? 'تحديث' : 'إضافة'}
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('busForm').addEventListener('submit', handleBusSubmit);
+            showModal();
+        }
+
+        function openFuelForm(fuelId = null) {
+            editingId = fuelId;
+            const fuel = fuelId ? appState.fuel.find(f => f.id === fuelId) : null;
+            
+            document.getElementById('modalTitle').textContent = fuelId ? 'تعديل تعبئة' : 'إضافة تعبئة جديدة';
+            
+            const busOptions = appState.buses.map(b => 
+                `<option value="${b.id}" ${fuel?.busId === b.id ? 'selected' : ''}>${b.number}</option>`
+            ).join('');
+            
+            const driverOptions = appState.drivers.map(d => 
+                `<option value="${d.id}" ${fuel?.driverId === d.id ? 'selected' : ''}>${d.name}</option>`
+            ).join('');
+            
+            document.getElementById('modalContent').innerHTML = `
+                <form id="fuelForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الباص</label>
+                        <select id="busId" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                            <option value="">اختر الباص</option>
+                            ${busOptions}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">اسم السائق</label>
+                        <select id="driverId" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                            <option value="">اختر السائق</option>
+                            ${driverOptions}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ التعبئة</label>
+                        <input type="date" id="fuelDate" value="${fuel?.date || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المبلغ (ريال)</label>
+                        <input type="number" id="amount" value="${fuel?.amount || ''}" step="0.01" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
+                        <button type="button" onclick="closeModal()" class="px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 mobile-btn touch-target">
+                            إلغاء
+                        </button>
+                        <button type="submit" class="btn-primary px-4 py-3 text-white rounded-md mobile-btn touch-target">
+                            ${fuelId ? 'تحديث' : 'إضافة'}
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('fuelForm').addEventListener('submit', handleFuelSubmit);
+            showModal();
+        }
+
+        function openMaintenanceForm(maintenanceId = null) {
+            editingId = maintenanceId;
+            const maintenance = maintenanceId ? appState.maintenance.find(m => m.id === maintenanceId) : null;
+            
+            document.getElementById('modalTitle').textContent = maintenanceId ? 'تعديل صيانة' : 'إضافة صيانة جديدة';
+            
+            const busOptions = appState.buses.map(b => 
+                `<option value="${b.id}" ${maintenance?.busId === b.id ? 'selected' : ''}>${b.number}</option>`
+            ).join('');
+            
+            document.getElementById('modalContent').innerHTML = `
+                <form id="maintenanceForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">نوع الصيانة</label>
+                        <input type="text" id="maintenanceType" value="${maintenance?.type || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ الصيانة</label>
+                        <input type="date" id="maintenanceDate" value="${maintenance?.date || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الحافلة</label>
+                        <select id="busId" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                            <option value="">اختر الحافلة</option>
+                            ${busOptions}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ انتهاء DOT</label>
+                        <input type="date" id="dotExpiryDate" value="${maintenance?.dotExpiryDate || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
+                        <button type="button" onclick="closeModal()" class="px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 mobile-btn touch-target">
+                            إلغاء
+                        </button>
+                        <button type="submit" class="btn-primary px-4 py-3 text-white rounded-md mobile-btn touch-target">
+                            ${maintenanceId ? 'تحديث' : 'إضافة'}
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('maintenanceForm').addEventListener('submit', handleMaintenanceSubmit);
+            showModal();
+        }
+
+        function openAttendanceForm() {
+            document.getElementById('modalTitle').textContent = 'تسجيل حضور';
+            
+            const driverOptions = appState.drivers.map(d => 
+                `<option value="${d.id}">${d.name}</option>`
+            ).join('');
+            
+            const supervisorOptions = appState.supervisors.map(s => 
+                `<option value="${s.id}">${s.name}</option>`
+            ).join('');
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('modalContent').innerHTML = `
+                <form id="attendanceForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">النوع</label>
+                        <select id="attendanceType" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                            <option value="">اختر النوع</option>
+                            <option value="driver">سائق</option>
+                            <option value="supervisor">مشرفة</option>
+                        </select>
+                    </div>
+                    <div id="personSelect" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الشخص</label>
+                        <select id="personId" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                            <option value="">اختر الشخص</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">التاريخ</label>
+                        <input type="date" id="attendanceDate" value="${today}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الحالة</label>
+                        <select id="attendanceStatus" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
+                            <option value="">اختر الحالة</option>
+                            <option value="present">حاضر</option>
+                            <option value="absent">غائب</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
+                        <button type="button" onclick="closeModal()" class="px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 mobile-btn touch-target">
+                            إلغاء
+                        </button>
+                        <button type="submit" class="btn-primary px-4 py-3 text-white rounded-md mobile-btn touch-target">
+                            تسجيل
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            // Handle type change
+            document.getElementById('attendanceType').addEventListener('change', function() {
+                const type = this.value;
+                const personSelect = document.getElementById('personSelect');
+                const personId = document.getElementById('personId');
+                
+                if (type) {
+                    personSelect.classList.remove('hidden');
+                    if (type === 'driver') {
+                        personId.innerHTML = '<option value="">اختر السائق</option>' + driverOptions;
+                    } else {
+                        personId.innerHTML = '<option value="">اختر المشرفة</option>' + supervisorOptions;
+                    }
+                } else {
+                    personSelect.classList.add('hidden');
+                }
+            });
+            
+            document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceSubmit);
+            showModal();
+        }
+
+        // Form submission handlers (same as before but with better error handling)
+        async function handleStudentSubmit(e) {
+            e.preventDefault();
+            
+            const data = {
+                busNumber: document.getElementById('busNumber').value,
+                name: document.getElementById('studentName').value,
+                grade: document.getElementById('grade').value,
+                area: document.getElementById('area').value,
+                supervisorId: document.getElementById('supervisorId').value,
+                driverId: document.getElementById('driverId').value
+            };
+            
+            try {
+                if (editingId) {
+                    await db.collection('students').doc(editingId).update(data);
+                    const index = appState.students.findIndex(s => s.id === editingId);
+                    appState.students[index] = { id: editingId, ...data };
+                } else {
+                    const docRef = await db.collection('students').add(data);
+                    appState.students.push({ id: docRef.id, ...data });
+                }
+                
+                closeModal();
+                renderStudentsTable();
+                updateDashboardStats();
+            } catch (error) {
+                console.error('Error saving student:', error);
+                alert('حدث خطأ أثناء حفظ البيانات');
+            }
+        }
+
+        async function handleSupervisorSubmit(e) {
+            e.preventDefault();
+            
+            const data = {
+                permitNumber: document.getElementById('permitNumber').value,
+                name: document.getElementById('supervisorName').value,
+                phone: document.getElementById('phone').value,
+                expiryDate: document.getElementById('expiryDate').value,
+                area: document.getElementById('area').value
+            };
+            
+            try {
+                if (editingId) {
+                    await db.collection('supervisors').doc(editingId).update(data);
+                    const index = appState.supervisors.findIndex(s => s.id === editingId);
+                    appState.supervisors[index] = { id: editingId, ...data };
+                } else {
+                    const docRef = await db.collection('supervisors').add(data);
+                    appState.supervisors.push({ id: docRef.id, ...data });
+                }
+                
+                closeModal();
+                renderSupervisorsTable();
+                updateDashboardStats();
+            } catch (error) {
+                console.error('Error saving supervisor:', error);
+                alert('حدث خطأ أثناء حفظ البيانات');
+            }
+        }
+
+        async function handleDriverSubmit(e) {
+            e.preventDefault();
+            
+            const data = {
+                permitNumber: document.getElementById('permitNumber').value,
+                name: document.getElementById('driverName').value,
+                phone: document.getElementById('phone').value,
+                area: document.getElementById('area').value,
+                expiryDate: document.getElementById('expiryDate').value
+            };
+            
+            try {
+                if (editingId) {
+                    await db.collection('drivers').doc(editingId).update(data);
+                    const index = appState.drivers.findIndex(d => d.id === editingId);
+                    appState.drivers[index] = { id: editingId, ...data };
+                } else {
+                    const docRef = await db.collection('drivers').add(data);
+                    appState.drivers.push({ id: docRef.id, ...data });
+                }
+                
+                closeModal();
+                renderDriversTable();
+                updateDashboardStats();
+            } catch (error) {
+                console.error('Error saving driver:', error);
+                alert('حدث خطأ أثناء حفظ البيانات');
+            }
+        }
+
+        async function handleBusSubmit(e) {
+            e.preventDefault();
+            
+            const data = {
+                number: document.getElementById('busNumber').value,
+                company: document.getElementById('company').value,
+                type: document.getElementById('busType').value,
+                dotNumber: document.getElementById('dotNumber').value
+            };
+            
+            try {
+                if (editingId) {
+                    await db.collection('buses').doc(editingId).update(data);
+                    const index = appState.buses.findIndex(b => b.id === editingId);
+                    appState.buses[index] = { id: editingId, ...data };
+                } else {
+                    const docRef = await db.collection('buses').add(data);
+                    appState.buses.push({ id: docRef.id, ...data });
+                }
+                
+                closeModal();
+                renderBusesTable();
+                updateDashboardStats();
+            } catch (error) {
+                console.error('Error saving bus:', error);
+                alert('حدث خطأ أثناء حفظ البيانات');
+            }
+        }
+
+        async function handleFuelSubmit(e) {
+            e.preventDefault();
+            
+            const data = {
+                busId: document.getElementById('busId').value,
+                driverId: document.getElementById('driverId').value,
+                date: document.getElementById('fuelDate').value,
+                amount: parseFloat(document.getElementById('amount').value)
+            };
+            
+            try {
+                if (editingId) {
+                    await db.collection('fuel').doc(editingId).update(data);
+                    const index = appState.fuel.findIndex(f => f.id === editingId);
+                    appState.fuel[index] = { id: editingId, ...data };
+                } else {
+                    const docRef = await db.collection('fuel').add(data);
+                    appState.fuel.push({ id: docRef.id, ...data });
+                }
+                
+                closeModal();
+                renderFuelTable();
+                updateTopFuelConsumers();
+            } catch (error) {
+                console.error('Error saving fuel:', error);
+                alert('حدث خطأ أثناء حفظ البيانات');
+            }
+        }
+
+        async function handleMaintenanceSubmit(e) {
+            e.preventDefault();
+            
+            const data = {
+                type: document.getElementById('maintenanceType').value,
+                date: document.getElementById('maintenanceDate').value,
+                busId: document.getElementById('busId').value,
+                dotExpiryDate: document.getElementById('dotExpiryDate').value
+            };
+            
+            try {
+                if (editingId) {
+                    await db.collection('maintenance').doc(editingId).update(data);
+                    const index = appState.maintenance.findIndex(m => m.id === editingId);
+                    appState.maintenance[index] = { id: editingId, ...data };
+                } else {
+                    const docRef = await db.collection('maintenance').add(data);
+                    appState.maintenance.push({ id: docRef.id, ...data });
+                }
+                
+                closeModal();
+                renderMaintenanceTable();
+            } catch (error) {
+                console.error('Error saving maintenance:', error);
+                alert('حدث خطأ أثناء حفظ البيانات');
+            }
+        }
+
+        async function handleAttendanceSubmit(e) {
+            e.preventDefault();
+            
+            const data = {
+                type: document.getElementById('attendanceType').value,
+                personId: document.getElementById('personId').value,
+                date: document.getElementById('attendanceDate').value,
+                status: document.getElementById('attendanceStatus').value
+            };
+            
+            try {
+                const docRef = await db.collection('attendance').add(data);
+                appState.attendance.push({ id: docRef.id, ...data });
+                
+                closeModal();
+                renderAttendanceTable();
+            } catch (error) {
+                console.error('Error saving attendance:', error);
+                alert('حدث خطأ أثناء حفظ البيانات');
+            }
+        }
+
+        // Edit functions
+        function editStudent(id) {
+            openStudentForm(id);
+        }
+
+        function editSupervisor(id) {
+            openSupervisorForm(id);
+        }
+
+        function editDriver(id) {
+            openDriverForm(id);
+        }
+
+        function editBus(id) {
+            openBusForm(id);
+        }
+
+        function editFuel(id) {
+            openFuelForm(id);
+        }
+
+        function editMaintenance(id) {
+            openMaintenanceForm(id);
+        }
+
+        // Delete functions (same as before but with better confirmations)
+        async function deleteStudent(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
+                try {
+                    await db.collection('students').doc(id).delete();
+                    appState.students = appState.students.filter(s => s.id !== id);
+                    renderStudentsTable();
+                    updateDashboardStats();
+                } catch (error) {
+                    console.error('Error deleting student:', error);
+                    alert('حدث خطأ أثناء الحذف');
+                }
+            }
+        }
+
+        async function deleteSupervisor(id) {
+            if (confirm('هل أنت متأكد من حذف هذه المشرفة؟')) {
+                try {
+                    await db.collection('supervisors').doc(id).delete();
+                    appState.supervisors = appState.supervisors.filter(s => s.id !== id);
+                    renderSupervisorsTable();
+                    updateDashboardStats();
+                } catch (error) {
+                    console.error('Error deleting supervisor:', error);
+                    alert('حدث خطأ أثناء الحذف');
+                }
+            }
+        }
+
+        async function deleteDriver(id) {
+            if (confirm('هل أنت متأكد من حذف هذا السائق؟')) {
+                try {
+                    await db.collection('drivers').doc(id).delete();
+                    appState.drivers = appState.drivers.filter(d => d.id !== id);
+                    renderDriversTable();
+                    updateDashboardStats();
+                } catch (error) {
+                    console.error('Error deleting driver:', error);
+                    alert('حدث خطأ أثناء الحذف');
+                }
+            }
+        }
+
+        async function deleteBus(id) {
+            if (confirm('هل أنت متأكد من حذف هذه الحافلة؟')) {
+                try {
+                    await db.collection('buses').doc(id).delete();
+                    appState.buses = appState.buses.filter(b => b.id !== id);
+                    renderBusesTable();
+                    updateDashboardStats();
+                } catch (error) {
+                    console.error('Error deleting bus:', error);
+                    alert('حدث خطأ أثناء الحذف');
+                }
+            }
+        }
+
+        async function deleteFuel(id) {
+            if (confirm('هل أنت متأكد من حذف سجل التعبئة هذا؟')) {
+                try {
+                    await db.collection('fuel').doc(id).delete();
+                    appState.fuel = appState.fuel.filter(f => f.id !== id);
+                    renderFuelTable();
+                    updateTopFuelConsumers();
+                } catch (error) {
+                    console.error('Error deleting fuel:', error);
+                    alert('حدث خطأ أثناء الحذف');
+                }
+            }
+        }
+
+        async function deleteMaintenance(id) {
+            if (confirm('هل أنت متأكد من حذف سجل الصيانة هذا؟')) {
+                try {
+                    await db.collection('maintenance').doc(id).delete();
+                    appState.maintenance = appState.maintenance.filter(m => m.id !== id);
+                    renderMaintenanceTable();
+                } catch (error) {
+                    console.error('Error deleting maintenance:', error);
+                    alert('حدث خطأ أثناء الحذف');
+                }
+            }
+        }
+
+        // Search/Filter functions (improved for mobile)
+        function filterTable(section) {
+            const searchInput = document.getElementById(`${section.slice(0, -1)}Search`);
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            // Re-render the table with filtered data
+            switch(section) {
+                case 'students':
+                    const filteredStudents = appState.students.filter(student => 
+                        student.name.toLowerCase().includes(searchTerm) ||
+                        student.grade.toLowerCase().includes(searchTerm) ||
+                        student.area.toLowerCase().includes(searchTerm) ||
+                        student.busNumber?.toLowerCase().includes(searchTerm)
+                    );
+                    renderFilteredStudents(filteredStudents);
+                    break;
+                    
+                case 'supervisors':
+                    const filteredSupervisors = appState.supervisors.filter(supervisor => 
+                        supervisor.name.toLowerCase().includes(searchTerm) ||
+                        supervisor.permitNumber.toLowerCase().includes(searchTerm) ||
+                        supervisor.area.toLowerCase().includes(searchTerm)
+                    );
+                    renderFilteredSupervisors(filteredSupervisors);
+                    break;
+                    
+                // Add similar filtering for other sections...
+            }
+        }
+
+        function renderFilteredStudents(students) {
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = '';
+            
+            students.forEach(student => {
+                const supervisor = appState.supervisors.find(s => s.id === student.supervisorId);
+                const driver = appState.drivers.find(d => d.id === student.driverId);
+                
+                const row = document.createElement('tr');
+                row.classList.add('slide-in');
+                row.innerHTML = `
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${student.busNumber || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${student.grade} - ${student.area}</div>
+                        ${student.name}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${student.grade}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${student.area}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${supervisor?.name || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${driver?.name || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-1 space-x-reverse">
+                            <button onclick="editStudent('${student.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteStudent('${student.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderFilteredSupervisors(supervisors) {
+            const tbody = document.getElementById('supervisorsTableBody');
+            tbody.innerHTML = '';
+            
+            supervisors.forEach(supervisor => {
+                const row = document.createElement('tr');
+                row.classList.add('slide-in');
+                row.innerHTML = `
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${supervisor.permitNumber}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400">${supervisor.phone}</div>
+                        ${supervisor.name}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden sm:table-cell">${supervisor.phone}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">${supervisor.expiryDate}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">${supervisor.area}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-1 space-x-reverse">
+                            <button onclick="editSupervisor('${supervisor.id}')" class="text-blue-600 hover:text-blue-900 p-1 rounded touch-target">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteSupervisor('${supervisor.id}')" class="text-red-600 hover:text-red-900 p-1 rounded touch-target">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Modal functions
+        function showModal() {
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('modal').classList.remove('flex');
+            document.body.style.overflow = '';
+            editingId = null;
+        }
+    </script>
+</body>
+</html>
