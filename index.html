@@ -776,7 +776,7 @@
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-600 dark:text-gray-400">استهلاك الديزل</span>
-                                <span class="font-bold text-warning" id="fuelConsumption">0 ريال</span>
+                                <span class="font-bold text-warning" id="fuelConsumption">0 درهم</span>
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-600 dark:text-gray-400">عمليات الصيانة</span>
@@ -1739,7 +1739,7 @@
             const maintenanceCount = appState.maintenance.length;
             
             document.getElementById('newStudents').textContent = newStudentsCount;
-            document.getElementById('fuelConsumption').textContent = totalFuelCost.toFixed(2) + ' ريال';
+            document.getElementById('fuelConsumption').textContent = totalFuelCost.toFixed(2) + ' درهم';
             document.getElementById('maintenanceCount').textContent = maintenanceCount;
             
             // Update alerts
@@ -2066,7 +2066,7 @@
                         <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400 mb-1">${driver?.name || '-'}</div>
                         <div class="font-medium">${fuel.date}</div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-bold text-green-600">${fuel.amount} ريال</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-bold text-green-600">${fuel.amount} درهم</td>
                     <td class="px-6 py-4">
                         <div class="flex justify-center gap-2">
                             <button onclick="viewFuel('${fuel.id}')" class="btn-action btn-view" title="عرض">
@@ -2127,7 +2127,7 @@
                         <span class="text-sm font-medium text-gray-900 dark:text-white">حافلة ${busNumber}</span>
                         <span class="text-xs bg-primary text-white px-2 py-1 rounded-full">#${index + 1}</span>
                     </div>
-                    <div class="text-xl font-bold text-primary">${amount.toFixed(2)} ريال</div>
+                    <div class="text-xl font-bold text-primary">${amount.toFixed(2)} درهم</div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">إجمالي الاستهلاك</div>
                 `;
                 container.appendChild(div);
@@ -2168,7 +2168,7 @@
                         <div class="font-medium">${maintenance.date}</div>
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden sm:table-cell">${bus?.number || '-'}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden md:table-cell font-bold text-red-600">${maintenance.cost || '-'} ريال</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden md:table-cell font-bold text-red-600">${maintenance.cost || '-'} درهم</td>
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden lg:table-cell">${maintenance.description || '-'}</td>
                     <td class="px-6 py-4">
                         <div class="flex justify-center gap-2">
@@ -2814,7 +2814,7 @@
                         <input type="date" id="fuelDate" value="${fuel?.date || new Date().toISOString().split('T')[0]}" class="input-professional" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">المبلغ (ريال) <span class="text-red-500">*</span></label>
+                        <label class="form-label">المبلغ (درهم) <span class="text-red-500">*</span></label>
                         <input type="number" id="amount" value="${fuel?.amount || ''}" class="input-professional" min="0" step="0.01" required>
                     </div>
                     <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4">
@@ -2917,7 +2917,7 @@
                         <input type="date" id="maintenanceDate" value="${maintenance?.date || new Date().toISOString().split('T')[0]}" class="input-professional" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">التكلفة (ريال)</label>
+                        <label class="form-label">التكلفة (درهم)</label>
                         <input type="number" id="cost" value="${maintenance?.cost || ''}" class="input-professional" min="0" step="0.01">
                     </div>
                     <div class="form-group">
