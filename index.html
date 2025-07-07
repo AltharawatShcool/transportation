@@ -428,7 +428,7 @@
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">رقم 📱 الآيص</th>
+                                        <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">رقم  الاسيس</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">اسم الطالب</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">الصف</th>
                                         <th class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">المنطقة</th>
@@ -1538,7 +1538,7 @@
             document.getElementById('modalContent').innerHTML = `
                 <form id="studentForm" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم 📱 الآيص</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الاسيس</label>
                         <input type="text" id="aysisNumber" value="${student?.aysisNumber || ''}" class="mobile-form-input w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base" required>
                         <p id="aysisError" class="text-red-500 text-xs mt-1 hidden">هذا الرقم مستخدم مسبقاً</p>
                     </div>
@@ -2373,7 +2373,7 @@
                         const supervisor = appState.supervisors.find(s => s.id === student.supervisorId);
                         const driver = appState.drivers.find(d => d.id === student.driverId);
                         return {
-                            'رقم الآيص': student.aysisNumber || '',
+                            'رقم الاسيس': student.aysisNumber || '',
                             'اسم الطالب': student.name,
                             'الصف': student.grade,
                             'المنطقة': student.area,
@@ -2541,7 +2541,7 @@
                     switch(section) {
                         case 'students':
                             documentData = {
-                                aysisNumber: row['رقم الآيص'] || row['رقم 📱 الآيص'] || '',
+                                aysisNumber: row['رقم الاسيس'] || row['رقم  الاسيس'] || '',
                                 name: row['اسم الطالب'] || '',
                                 grade: row['الصف'] || '',
                                 area: row['المنطقة'] || '',
