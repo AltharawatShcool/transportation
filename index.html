@@ -489,6 +489,27 @@
             padding-left: 44px;
         }
 
+        /* Search Results */
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .search-result-item:hover {
+            background: #f3f4f6;
+            border-color: #667eea;
+            transform: translateX(4px);
+        }
+
+        .dark .search-result-item:hover {
+            background: #374151;
+        }
+
         /* Status badges */
         .status-badge {
             padding: 4px 12px;
@@ -690,6 +711,23 @@
                             <div class="hidden lg:block">
                                 <i class="fas fa-tachometer-alt text-6xl opacity-20"></i>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Search Bar -->
+                <div class="card-professional mb-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-search text-primary text-xl ml-3"></i>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">البحث السريع في النظام</h3>
+                    </div>
+                    <div class="search-container mb-4">
+                        <input type="text" id="globalSearch" placeholder="البحث في جميع الأقسام..." class="input-professional search-input" oninput="performGlobalSearch()" autocomplete="off">
+                    </div>
+                    <div id="searchResults" class="hidden">
+                        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">نتائج البحث:</h4>
+                            <div id="searchResultsList" class="space-y-2"></div>
                         </div>
                     </div>
                 </div>
@@ -1526,6 +1564,125 @@
             }
         }
 
+        // Global Search Functionality
+        function performGlobalSearch() {
+            const searchTerm = document.getElementById('globalSearch').value.toLowerCase().trim();
+            const searchResults = document.getElementById('searchResults');
+            const searchResultsList = document.getElementById('searchResultsList');
+            
+            if (searchTerm.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+            
+            const results = [];
+            
+            // Search in students
+            appState.students.forEach(student => {
+                if (student.name && student.name.toLowerCase().includes(searchTerm) ||
+                    student.aysisNumber && student.aysisNumber.toLowerCase().includes(searchTerm) ||
+                    student.grade && student.grade.toLowerCase().includes(searchTerm) ||
+                    student.area && student.area.toLowerCase().includes(searchTerm)) {
+                    results.push({
+                        type: 'students',
+                        title: student.name,
+                        subtitle: `طالب - ${student.grade} - ${student.area}`,
+                        icon: 'fa-user-graduate',
+                        action: () => { showSection('students'); setTimeout(() => filterTable('students', student.name), 300); }
+                    });
+                }
+            });
+            
+            // Search in supervisors
+            appState.supervisors.forEach(supervisor => {
+                if (supervisor.name && supervisor.name.toLowerCase().includes(searchTerm) ||
+                    supervisor.permitNumber && supervisor.permitNumber.toLowerCase().includes(searchTerm) ||
+                    supervisor.area && supervisor.area.toLowerCase().includes(searchTerm)) {
+                    results.push({
+                        type: 'supervisors',
+                        title: supervisor.name,
+                        subtitle: `مشرفة - ${supervisor.permitNumber}`,
+                        icon: 'fa-user-tie',
+                        action: () => { showSection('supervisors'); setTimeout(() => filterTable('supervisors', supervisor.name), 300); }
+                    });
+                }
+            });
+            
+            // Search in drivers
+            appState.drivers.forEach(driver => {
+                if (driver.name && driver.name.toLowerCase().includes(searchTerm) ||
+                    driver.permitNumber && driver.permitNumber.toLowerCase().includes(searchTerm) ||
+                    driver.area && driver.area.toLowerCase().includes(searchTerm)) {
+                    results.push({
+                        type: 'drivers',
+                        title: driver.name,
+                        subtitle: `سائق - ${driver.permitNumber}`,
+                        icon: 'fa-id-card',
+                        action: () => { showSection('drivers'); setTimeout(() => filterTable('drivers', driver.name), 300); }
+                    });
+                }
+            });
+            
+            // Search in buses
+            appState.buses.forEach(bus => {
+                if (bus.number && bus.number.toLowerCase().includes(searchTerm) ||
+                    bus.company && bus.company.toLowerCase().includes(searchTerm) ||
+                    bus.type && bus.type.toLowerCase().includes(searchTerm)) {
+                    results.push({
+                        type: 'buses',
+                        title: `حافلة ${bus.number}`,
+                        subtitle: `${bus.company} - ${bus.type}`,
+                        icon: 'fa-bus',
+                        action: () => { showSection('buses'); setTimeout(() => filterTable('buses', bus.number), 300); }
+                    });
+                }
+            });
+            
+            // Display results
+            searchResultsList.innerHTML = '';
+            
+            if (results.length === 0) {
+                searchResultsList.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-search text-2xl mb-2"></i>
+                        <p class="text-sm">لا توجد نتائج للبحث "${searchTerm}"</p>
+                    </div>
+                `;
+            } else {
+                results.slice(0, 10).forEach(result => {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'search-result-item';
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <div class="p-2 rounded-lg bg-primary bg-opacity-10 ml-3">
+                                <i class="fas ${result.icon} text-primary"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-white">${result.title}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">${result.subtitle}</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-arrow-left text-gray-400"></i>
+                    `;
+                    resultDiv.addEventListener('click', () => {
+                        result.action();
+                        document.getElementById('globalSearch').value = '';
+                        searchResults.classList.add('hidden');
+                    });
+                    searchResultsList.appendChild(resultDiv);
+                });
+                
+                if (results.length > 10) {
+                    const moreDiv = document.createElement('div');
+                    moreDiv.className = 'text-center py-2 text-gray-500 dark:text-gray-400 text-sm';
+                    moreDiv.textContent = `وجد ${results.length - 10} نتيجة إضافية...`;
+                    searchResultsList.appendChild(moreDiv);
+                }
+            }
+            
+            searchResults.classList.remove('hidden');
+        }
+
         // Initialize Application
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
@@ -1603,6 +1760,16 @@
             window.addEventListener('resize', function() {
                 if (window.innerWidth >= 1024) {
                     closeSidebar();
+                }
+            });
+            
+            // Click outside global search to close
+            document.addEventListener('click', function(e) {
+                const globalSearch = document.getElementById('globalSearch');
+                const searchResults = document.getElementById('searchResults');
+                
+                if (!globalSearch.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.classList.add('hidden');
                 }
             });
         }
@@ -1732,8 +1899,23 @@
             }
         }
 
+        function showConfirmDialog(message, onConfirm) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
+                    <div class="flex justify-end space-x-3 space-x-reverse">
+                        <button class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onclick="this.closest('.fixed').remove()">إلغاء</button>
+                        <button class="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded" onclick="this.closest('.fixed').remove(); (${onConfirm})()">تأكيد</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
         function handleLogout() {
-            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+            showConfirmDialog('هل أنت متأكد من تسجيل الخروج؟', function() {
                 SessionManager.logout();
                 showLoginPage();
                 document.getElementById('username').value = '';
@@ -1743,7 +1925,7 @@
                 document.getElementById('loginBtn').disabled = false;
                 closeSidebar();
                 NotificationManager.show('تم تسجيل الخروج بنجاح', 'info');
-            }
+            });
         }
 
         async function loadInitialData() {
@@ -1888,6 +2070,64 @@
                         <span class="text-sm text-yellow-800 dark:text-yellow-200">${alert}</span>
                     </div>
                 `).join('');
+            }
+        }
+
+        // Enhanced Filter Table Function
+        function filterTable(section, searchTerm = null) {
+            const searchInput = document.getElementById(section + 'Search');
+            const query = searchTerm || (searchInput ? searchInput.value.toLowerCase().trim() : '');
+            const tbody = document.getElementById(section + 'TableBody');
+            
+            if (!tbody) return;
+            
+            const rows = tbody.querySelectorAll('tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase().replace(/\s+/g, ' ');
+                const isVisible = !query || text.includes(query);
+                
+                if (isVisible) {
+                    row.style.display = '';
+                    visibleCount++;
+                    // Add highlight effect for search results
+                    if (query && query.length > 0) {
+                        row.style.backgroundColor = 'rgba(93, 92, 222, 0.05)';
+                        row.style.borderLeft = '3px solid #5D5CDE';
+                    } else {
+                        row.style.backgroundColor = '';
+                        row.style.borderLeft = '';
+                    }
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Update search input if called programmatically
+            if (searchTerm && searchInput) {
+                searchInput.value = searchTerm;
+            }
+            
+            // Show no results message
+            const existingNoResults = tbody.querySelector('.no-results-row');
+            if (existingNoResults) {
+                existingNoResults.remove();
+            }
+            
+            if (visibleCount === 0 && query) {
+                const noResultsRow = document.createElement('tr');
+                noResultsRow.className = 'no-results-row';
+                noResultsRow.innerHTML = `
+                    <td colspan="10" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-search text-4xl mb-4 opacity-50"></i>
+                            <p class="text-lg font-medium">لا توجد نتائج للبحث</p>
+                            <p class="text-sm">جرب البحث بكلمات مختلفة</p>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(noResultsRow);
             }
         }
 
@@ -2449,26 +2689,6 @@
             const today = new Date();
             const daysLeft = Math.ceil((date - today) / (1000 * 60 * 60 * 24));
             return daysLeft <= 30 && daysLeft >= 0;
-        }
-
-        // Filter table function
-        function filterTable(section) {
-            const searchInput = document.getElementById(section + 'Search');
-            if (!searchInput) return;
-            
-            const searchTerm = searchInput.value.toLowerCase();
-            const tbody = document.getElementById(section + 'TableBody');
-            if (!tbody) return;
-            
-            const rows = tbody.querySelectorAll('tr');
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
         }
 
         // Form Functions - Part 1: Students
@@ -3385,7 +3605,7 @@
             const student = appState.students.find(s => s.id === id);
             if (!student) return;
 
-            if (confirm(`هل أنت متأكد من حذف الطالب "${student.name}"؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+            showConfirmDialog(`هل أنت متأكد من حذف الطالب "${student.name}"؟<br>هذا الإجراء لا يمكن التراجع عنه.`, async function() {
                 showLoading();
                 try {
                     await DatabaseManager.deleteData('students', id);
@@ -3399,14 +3619,14 @@
                 } finally {
                     hideLoading();
                 }
-            }
+            });
         }
 
         async function deleteSupervisor(id) {
             const supervisor = appState.supervisors.find(s => s.id === id);
             if (!supervisor) return;
 
-            if (confirm(`هل أنت متأكد من حذف المشرفة "${supervisor.name}"؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+            showConfirmDialog(`هل أنت متأكد من حذف المشرفة "${supervisor.name}"؟<br>هذا الإجراء لا يمكن التراجع عنه.`, async function() {
                 showLoading();
                 try {
                     await DatabaseManager.deleteData('supervisors', id);
@@ -3421,14 +3641,14 @@
                 } finally {
                     hideLoading();
                 }
-            }
+            });
         }
 
         async function deleteDriver(id) {
             const driver = appState.drivers.find(d => d.id === id);
             if (!driver) return;
 
-            if (confirm(`هل أنت متأكد من حذف السائق "${driver.name}"؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+            showConfirmDialog(`هل أنت متأكد من حذف السائق "${driver.name}"؟<br>هذا الإجراء لا يمكن التراجع عنه.`, async function() {
                 showLoading();
                 try {
                     await DatabaseManager.deleteData('drivers', id);
@@ -3443,14 +3663,14 @@
                 } finally {
                     hideLoading();
                 }
-            }
+            });
         }
 
         async function deleteBus(id) {
             const bus = appState.buses.find(b => b.id === id);
             if (!bus) return;
 
-            if (confirm(`هل أنت متأكد من حذف الحافلة رقم "${bus.number}"؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+            showConfirmDialog(`هل أنت متأكد من حذف الحافلة رقم "${bus.number}"؟<br>هذا الإجراء لا يمكن التراجع عنه.`, async function() {
                 showLoading();
                 try {
                     await DatabaseManager.deleteData('buses', id);
@@ -3465,14 +3685,14 @@
                 } finally {
                     hideLoading();
                 }
-            }
+            });
         }
 
         async function deleteFuel(id) {
             const fuel = appState.fuel.find(f => f.id === id);
             if (!fuel) return;
 
-            if (confirm(`هل أنت متأكد من حذف سجل الديزل؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+            showConfirmDialog(`هل أنت متأكد من حذف سجل الديزل؟<br>هذا الإجراء لا يمكن التراجع عنه.`, async function() {
                 showLoading();
                 try {
                     await DatabaseManager.deleteData('fuel', id);
@@ -3487,14 +3707,14 @@
                 } finally {
                     hideLoading();
                 }
-            }
+            });
         }
 
         async function deleteMaintenance(id) {
             const maintenance = appState.maintenance.find(m => m.id === id);
             if (!maintenance) return;
 
-            if (confirm(`هل أنت متأكد من حذف سجل الصيانة؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+            showConfirmDialog(`هل أنت متأكد من حذف سجل الصيانة؟<br>هذا الإجراء لا يمكن التراجع عنه.`, async function() {
                 showLoading();
                 try {
                     await DatabaseManager.deleteData('maintenance', id);
@@ -3508,14 +3728,14 @@
                 } finally {
                     hideLoading();
                 }
-            }
+            });
         }
 
         async function deleteAttendance(id) {
             const attendance = appState.attendance.find(a => a.id === id);
             if (!attendance) return;
 
-            if (confirm(`هل أنت متأكد من حذف سجل الحضور؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+            showConfirmDialog(`هل أنت متأكد من حذف سجل الحضور؟<br>هذا الإجراء لا يمكن التراجع عنه.`, async function() {
                 showLoading();
                 try {
                     await DatabaseManager.deleteData('attendance', id);
@@ -3528,14 +3748,14 @@
                 } finally {
                     hideLoading();
                 }
-            }
+            });
         }
 
         async function deleteResignation(id) {
             const resignation = appState.resignations.find(r => r.id === id);
             if (!resignation) return;
 
-            if (confirm(`هل أنت متأكد من حذف هذا السجل؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+            showConfirmDialog(`هل أنت متأكد من حذف هذا السجل؟<br>هذا الإجراء لا يمكن التراجع عنه.`, async function() {
                 showLoading();
                 try {
                     await DatabaseManager.deleteData('resignations', id);
@@ -3548,7 +3768,7 @@
                 } finally {
                     hideLoading();
                 }
-            }
+            });
         }
 
         // Import/Export functions
@@ -3661,6 +3881,7 @@
         window.exportToExcel = exportToExcel;
         window.importExcel = importExcel;
         window.filterTable = filterTable;
+        window.performGlobalSearch = performGlobalSearch;
         window.updatePersonOptions = updatePersonOptions;
         window.updateResignationPersonOptions = updateResignationPersonOptions;
         window.closeModal = closeModal;
