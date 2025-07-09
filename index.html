@@ -54,6 +54,16 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
         @keyframes bounceIn {
             0% { transform: scale(0.3); opacity: 0; }
             50% { transform: scale(1.05); }
@@ -70,6 +80,11 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
         
         /* Gradient Backgrounds */
@@ -555,6 +570,34 @@
         .form-group {
             margin-bottom: 16px;
         }
+
+        /* Enhanced search highlighting */
+        .search-highlight {
+            background: rgba(93, 92, 222, 0.1);
+            border-left: 3px solid #5D5CDE;
+            transform: translateX(2px);
+            animation: pulse 2s infinite;
+        }
+
+        /* Clear search button */
+        .clear-search-btn {
+            position: absolute;
+            left: 44px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .clear-search-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -723,6 +766,9 @@
                     </div>
                     <div class="search-container mb-4">
                         <input type="text" id="globalSearch" placeholder="البحث في جميع الأقسام..." class="input-professional search-input" oninput="performGlobalSearch()" autocomplete="off">
+                        <button id="clearGlobalSearch" class="clear-search-btn hidden" onclick="clearGlobalSearch()">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                     <div id="searchResults" class="hidden">
                         <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -892,7 +938,11 @@
                     <div class="mb-6">
                         <div class="search-container">
                             <input type="text" id="studentSearch" placeholder="البحث عن طالب..." class="input-professional search-input" oninput="filterTable('students')">
+                            <button id="clearStudentSearch" class="clear-search-btn hidden" onclick="clearSearch('students')">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
+                        <div id="studentsSearchCounter" class="text-sm text-gray-500 dark:text-gray-400 mt-2"></div>
                     </div>
                     
                     <div class="table-professional overflow-x-auto">
@@ -955,7 +1005,11 @@
                     <div class="mb-6">
                         <div class="search-container">
                             <input type="text" id="supervisorSearch" placeholder="البحث عن مشرفة..." class="input-professional search-input" oninput="filterTable('supervisors')">
+                            <button id="clearSupervisorSearch" class="clear-search-btn hidden" onclick="clearSearch('supervisors')">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
+                        <div id="supervisorsSearchCounter" class="text-sm text-gray-500 dark:text-gray-400 mt-2"></div>
                     </div>
                     
                     <div class="table-professional overflow-x-auto">
@@ -1017,7 +1071,11 @@
                     <div class="mb-6">
                         <div class="search-container">
                             <input type="text" id="driverSearch" placeholder="البحث عن سائق..." class="input-professional search-input" oninput="filterTable('drivers')">
+                            <button id="clearDriverSearch" class="clear-search-btn hidden" onclick="clearSearch('drivers')">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
+                        <div id="driversSearchCounter" class="text-sm text-gray-500 dark:text-gray-400 mt-2"></div>
                     </div>
                     
                     <div class="table-professional overflow-x-auto">
@@ -1079,7 +1137,11 @@
                     <div class="mb-6">
                         <div class="search-container">
                             <input type="text" id="busSearch" placeholder="البحث عن حافلة..." class="input-professional search-input" oninput="filterTable('buses')">
+                            <button id="clearBusSearch" class="clear-search-btn hidden" onclick="clearSearch('buses')">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
+                        <div id="busesSearchCounter" class="text-sm text-gray-500 dark:text-gray-400 mt-2"></div>
                     </div>
                     
                     <div class="table-professional overflow-x-auto">
@@ -1152,7 +1214,11 @@
                     <div class="mb-6">
                         <div class="search-container">
                             <input type="text" id="fuelSearch" placeholder="البحث في سجلات الديزل..." class="input-professional search-input" oninput="filterTable('fuel')">
+                            <button id="clearFuelSearch" class="clear-search-btn hidden" onclick="clearSearch('fuel')">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
+                        <div id="fuelSearchCounter" class="text-sm text-gray-500 dark:text-gray-400 mt-2"></div>
                     </div>
                     
                     <div class="table-professional overflow-x-auto">
@@ -1213,7 +1279,11 @@
                     <div class="mb-6">
                         <div class="search-container">
                             <input type="text" id="maintenanceSearch" placeholder="البحث في سجلات الصيانة..." class="input-professional search-input" oninput="filterTable('maintenance')">
+                            <button id="clearMaintenanceSearch" class="clear-search-btn hidden" onclick="clearSearch('maintenance')">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
+                        <div id="maintenanceSearchCounter" class="text-sm text-gray-500 dark:text-gray-400 mt-2"></div>
                     </div>
                     
                     <div class="table-professional overflow-x-auto">
@@ -1348,7 +1418,11 @@
                     <div class="mb-6">
                         <div class="search-container">
                             <input type="text" id="resignationSearch" placeholder="البحث في الاستقالات والإجازات..." class="input-professional search-input" oninput="filterTable('resignations')">
+                            <button id="clearResignationSearch" class="clear-search-btn hidden" onclick="clearSearch('resignations')">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
+                        <div id="resignationsSearchCounter" class="text-sm text-gray-500 dark:text-gray-400 mt-2"></div>
                     </div>
                     
                     <div class="table-professional overflow-x-auto">
@@ -1564,11 +1638,19 @@
             }
         }
 
-        // Global Search Functionality
+        // Enhanced Global Search Functionality
         function performGlobalSearch() {
             const searchTerm = document.getElementById('globalSearch').value.toLowerCase().trim();
             const searchResults = document.getElementById('searchResults');
             const searchResultsList = document.getElementById('searchResultsList');
+            const clearBtn = document.getElementById('clearGlobalSearch');
+            
+            // Show/hide clear button
+            if (searchTerm.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
             
             if (searchTerm.length < 2) {
                 searchResults.classList.add('hidden');
@@ -1577,66 +1659,104 @@
             
             const results = [];
             
-            // Search in students
+            // Search in students with improved matching
             appState.students.forEach(student => {
-                if (student.name && student.name.toLowerCase().includes(searchTerm) ||
-                    student.aysisNumber && student.aysisNumber.toLowerCase().includes(searchTerm) ||
-                    student.grade && student.grade.toLowerCase().includes(searchTerm) ||
-                    student.area && student.area.toLowerCase().includes(searchTerm)) {
+                const searchFields = [
+                    student.name,
+                    student.aysisNumber,
+                    student.grade,
+                    student.area
+                ].filter(Boolean).join(' ').toLowerCase();
+                
+                if (searchFields.includes(searchTerm)) {
                     results.push({
                         type: 'students',
                         title: student.name,
                         subtitle: `طالب - ${student.grade} - ${student.area}`,
                         icon: 'fa-user-graduate',
-                        action: () => { showSection('students'); setTimeout(() => filterTable('students', student.name), 300); }
+                        relevance: calculateRelevance(searchTerm, searchFields),
+                        action: () => { 
+                            showSection('students'); 
+                            setTimeout(() => filterTable('students', student.name), 300); 
+                        }
                     });
                 }
             });
             
             // Search in supervisors
             appState.supervisors.forEach(supervisor => {
-                if (supervisor.name && supervisor.name.toLowerCase().includes(searchTerm) ||
-                    supervisor.permitNumber && supervisor.permitNumber.toLowerCase().includes(searchTerm) ||
-                    supervisor.area && supervisor.area.toLowerCase().includes(searchTerm)) {
+                const searchFields = [
+                    supervisor.name,
+                    supervisor.permitNumber,
+                    supervisor.area,
+                    supervisor.phone
+                ].filter(Boolean).join(' ').toLowerCase();
+                
+                if (searchFields.includes(searchTerm)) {
                     results.push({
                         type: 'supervisors',
                         title: supervisor.name,
                         subtitle: `مشرفة - ${supervisor.permitNumber}`,
                         icon: 'fa-user-tie',
-                        action: () => { showSection('supervisors'); setTimeout(() => filterTable('supervisors', supervisor.name), 300); }
+                        relevance: calculateRelevance(searchTerm, searchFields),
+                        action: () => { 
+                            showSection('supervisors'); 
+                            setTimeout(() => filterTable('supervisors', supervisor.name), 300); 
+                        }
                     });
                 }
             });
             
             // Search in drivers
             appState.drivers.forEach(driver => {
-                if (driver.name && driver.name.toLowerCase().includes(searchTerm) ||
-                    driver.permitNumber && driver.permitNumber.toLowerCase().includes(searchTerm) ||
-                    driver.area && driver.area.toLowerCase().includes(searchTerm)) {
+                const searchFields = [
+                    driver.name,
+                    driver.permitNumber,
+                    driver.area,
+                    driver.phone
+                ].filter(Boolean).join(' ').toLowerCase();
+                
+                if (searchFields.includes(searchTerm)) {
                     results.push({
                         type: 'drivers',
                         title: driver.name,
                         subtitle: `سائق - ${driver.permitNumber}`,
                         icon: 'fa-id-card',
-                        action: () => { showSection('drivers'); setTimeout(() => filterTable('drivers', driver.name), 300); }
+                        relevance: calculateRelevance(searchTerm, searchFields),
+                        action: () => { 
+                            showSection('drivers'); 
+                            setTimeout(() => filterTable('drivers', driver.name), 300); 
+                        }
                     });
                 }
             });
             
             // Search in buses
             appState.buses.forEach(bus => {
-                if (bus.number && bus.number.toLowerCase().includes(searchTerm) ||
-                    bus.company && bus.company.toLowerCase().includes(searchTerm) ||
-                    bus.type && bus.type.toLowerCase().includes(searchTerm)) {
+                const searchFields = [
+                    bus.number,
+                    bus.company,
+                    bus.type,
+                    bus.dotNumber
+                ].filter(Boolean).join(' ').toLowerCase();
+                
+                if (searchFields.includes(searchTerm)) {
                     results.push({
                         type: 'buses',
                         title: `حافلة ${bus.number}`,
                         subtitle: `${bus.company} - ${bus.type}`,
                         icon: 'fa-bus',
-                        action: () => { showSection('buses'); setTimeout(() => filterTable('buses', bus.number), 300); }
+                        relevance: calculateRelevance(searchTerm, searchFields),
+                        action: () => { 
+                            showSection('buses'); 
+                            setTimeout(() => filterTable('buses', bus.number), 300); 
+                        }
                     });
                 }
             });
+            
+            // Sort by relevance
+            results.sort((a, b) => b.relevance - a.relevance);
             
             // Display results
             searchResultsList.innerHTML = '';
@@ -1649,16 +1769,17 @@
                     </div>
                 `;
             } else {
-                results.slice(0, 10).forEach(result => {
+                results.slice(0, 10).forEach((result, index) => {
                     const resultDiv = document.createElement('div');
                     resultDiv.className = 'search-result-item';
+                    resultDiv.style.animation = `fadeInUp 0.3s ease-out ${index * 0.05}s both`;
                     resultDiv.innerHTML = `
                         <div class="flex items-center">
                             <div class="p-2 rounded-lg bg-primary bg-opacity-10 ml-3">
                                 <i class="fas ${result.icon} text-primary"></i>
                             </div>
                             <div>
-                                <div class="font-medium text-gray-900 dark:text-white">${result.title}</div>
+                                <div class="font-medium text-gray-900 dark:text-white">${highlightMatch(result.title, searchTerm)}</div>
                                 <div class="text-sm text-gray-500 dark:text-gray-400">${result.subtitle}</div>
                             </div>
                         </div>
@@ -1666,8 +1787,7 @@
                     `;
                     resultDiv.addEventListener('click', () => {
                         result.action();
-                        document.getElementById('globalSearch').value = '';
-                        searchResults.classList.add('hidden');
+                        clearGlobalSearch();
                     });
                     searchResultsList.appendChild(resultDiv);
                 });
@@ -1681,6 +1801,195 @@
             }
             
             searchResults.classList.remove('hidden');
+        }
+
+        // Calculate search relevance
+        function calculateRelevance(searchTerm, text) {
+            const exactMatch = text.includes(searchTerm) ? 10 : 0;
+            const words = searchTerm.split(' ');
+            const wordMatches = words.reduce((score, word) => {
+                return score + (text.includes(word) ? 1 : 0);
+            }, 0);
+            return exactMatch + wordMatches;
+        }
+
+        // Highlight search matches
+        function highlightMatch(text, searchTerm) {
+            if (!searchTerm || searchTerm.length < 2) return text;
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            return text.replace(regex, '<span class="bg-yellow-200 dark:bg-yellow-700 px-1 rounded">$1</span>');
+        }
+
+        // Clear global search
+        function clearGlobalSearch() {
+            document.getElementById('globalSearch').value = '';
+            document.getElementById('clearGlobalSearch').classList.add('hidden');
+            document.getElementById('searchResults').classList.add('hidden');
+        }
+
+        // Enhanced Filter Table Function with improved search
+        function filterTable(section, searchTerm = null) {
+            const searchInput = document.getElementById(section + 'Search');
+            const query = searchTerm || (searchInput ? searchInput.value.toLowerCase().trim() : '');
+            const tbody = document.getElementById(section + 'TableBody');
+            const clearBtn = document.getElementById('clear' + section.charAt(0).toUpperCase() + section.slice(1) + 'Search');
+            
+            if (!tbody) return;
+            
+            // Show/hide clear button
+            if (clearBtn) {
+                if (query.length > 0) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+            
+            const rows = tbody.querySelectorAll('tr:not(.no-results-row)');
+            let visibleCount = 0;
+            
+            // Remove previous no results message
+            const existingNoResults = tbody.querySelector('.no-results-row');
+            if (existingNoResults) {
+                existingNoResults.remove();
+            }
+            
+            rows.forEach((row, index) => {
+                const text = row.textContent.toLowerCase().replace(/\s+/g, ' ');
+                const isVisible = !query || text.includes(query);
+                
+                if (isVisible) {
+                    row.style.display = '';
+                    visibleCount++;
+                    
+                    // Add highlight effect for search results
+                    if (query && query.length > 0) {
+                        row.classList.add('search-highlight');
+                    } else {
+                        row.classList.remove('search-highlight');
+                    }
+                    
+                    // Animate visible rows
+                    row.style.animation = `fadeInUp 0.3s ease-out ${index * 0.05}s both`;
+                } else {
+                    row.style.display = 'none';
+                    row.classList.remove('search-highlight');
+                    row.style.animation = '';
+                }
+            });
+            
+            // Update search input if called programmatically
+            if (searchTerm && searchInput) {
+                searchInput.value = searchTerm;
+                searchInput.focus();
+            }
+            
+            // Show no results message
+            if (visibleCount === 0 && query) {
+                const noResultsRow = document.createElement('tr');
+                noResultsRow.className = 'no-results-row';
+                noResultsRow.innerHTML = `
+                    <td colspan="10" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                        <div class="flex flex-col items-center" style="animation: fadeInUp 0.5s ease-out;">
+                            <i class="fas fa-search text-4xl mb-4 opacity-50"></i>
+                            <p class="text-lg font-medium">لا توجد نتائج للبحث "${query}"</p>
+                            <p class="text-sm mt-2">جرب البحث بكلمات مختلفة أو تأكد من الإملاء</p>
+                            <button onclick="clearSearch('${section}')" class="mt-3 px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-80 transition-colors">
+                                <i class="fas fa-times ml-2"></i>مسح البحث
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(noResultsRow);
+            }
+            
+            // Update search results counter
+            updateSearchCounter(section, visibleCount, rows.length);
+        }
+        
+        // Clear search function
+        function clearSearch(section) {
+            const searchInput = document.getElementById(section + 'Search');
+            const clearBtn = document.getElementById('clear' + section.charAt(0).toUpperCase() + section.slice(1) + 'Search');
+            
+            if (searchInput) {
+                searchInput.value = '';
+                if (clearBtn) {
+                    clearBtn.classList.add('hidden');
+                }
+                filterTable(section);
+                searchInput.focus();
+            }
+        }
+        
+        // Update search counter
+        function updateSearchCounter(section, visible, total) {
+            let counter = document.getElementById(section + 'SearchCounter');
+            
+            if (counter) {
+                if (visible === total) {
+                    counter.textContent = `إجمالي: ${total} عنصر`;
+                } else {
+                    counter.textContent = `عرض ${visible} من أصل ${total} عنصر`;
+                }
+                
+                // Add animation
+                counter.style.animation = 'fadeIn 0.3s ease-out';
+            }
+        }
+
+        // Enhanced confirm dialog
+        function showConfirmDialog(message, onConfirm) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.style.animation = 'fadeIn 0.3s ease-out';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4';
+            modalContent.style.animation = 'bounceIn 0.6s ease-out';
+            modalContent.innerHTML = `
+                <div class="text-center mb-6">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300 text-lg">${message}</p>
+                </div>
+                <div class="flex justify-end space-x-3 space-x-reverse">
+                    <button id="cancelBtn" class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">إلغاء</button>
+                    <button id="confirmBtn" class="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded transition-colors">تأكيد</button>
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Add event listeners
+            const cancelBtn = modalContent.querySelector('#cancelBtn');
+            const confirmBtn = modalContent.querySelector('#confirmBtn');
+            
+            const closeModal = () => {
+                modal.style.animation = 'fadeOut 0.3s ease-in';
+                setTimeout(() => modal.remove(), 300);
+            };
+            
+            cancelBtn.addEventListener('click', closeModal);
+            
+            confirmBtn.addEventListener('click', () => {
+                closeModal();
+                if (typeof onConfirm === 'function') {
+                    onConfirm();
+                }
+            });
+            
+            // Close on overlay click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // Focus on confirm button
+            setTimeout(() => confirmBtn.focus(), 100);
         }
 
         // Initialize Application
@@ -1770,6 +2079,25 @@
                 
                 if (!globalSearch.contains(e.target) && !searchResults.contains(e.target)) {
                     searchResults.classList.add('hidden');
+                }
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Escape key to close modals
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('modal');
+                    if (!modal.classList.contains('hidden')) {
+                        closeModal();
+                    }
+                    // Clear search
+                    clearGlobalSearch();
+                }
+                
+                // Ctrl/Cmd + K for global search
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    document.getElementById('globalSearch').focus();
                 }
             });
         }
@@ -1897,21 +2225,6 @@
                 form.style.animation = 'shake 0.5s ease-in-out';
                 setTimeout(() => form.style.animation = '', 500);
             }
-        }
-
-        function showConfirmDialog(message, onConfirm) {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-            modal.innerHTML = `
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
-                    <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
-                    <div class="flex justify-end space-x-3 space-x-reverse">
-                        <button class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onclick="this.closest('.fixed').remove()">إلغاء</button>
-                        <button class="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded" onclick="this.closest('.fixed').remove(); (${onConfirm})()">تأكيد</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
         }
 
         function handleLogout() {
@@ -2073,64 +2386,6 @@
             }
         }
 
-        // Enhanced Filter Table Function
-        function filterTable(section, searchTerm = null) {
-            const searchInput = document.getElementById(section + 'Search');
-            const query = searchTerm || (searchInput ? searchInput.value.toLowerCase().trim() : '');
-            const tbody = document.getElementById(section + 'TableBody');
-            
-            if (!tbody) return;
-            
-            const rows = tbody.querySelectorAll('tr');
-            let visibleCount = 0;
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase().replace(/\s+/g, ' ');
-                const isVisible = !query || text.includes(query);
-                
-                if (isVisible) {
-                    row.style.display = '';
-                    visibleCount++;
-                    // Add highlight effect for search results
-                    if (query && query.length > 0) {
-                        row.style.backgroundColor = 'rgba(93, 92, 222, 0.05)';
-                        row.style.borderLeft = '3px solid #5D5CDE';
-                    } else {
-                        row.style.backgroundColor = '';
-                        row.style.borderLeft = '';
-                    }
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-            
-            // Update search input if called programmatically
-            if (searchTerm && searchInput) {
-                searchInput.value = searchTerm;
-            }
-            
-            // Show no results message
-            const existingNoResults = tbody.querySelector('.no-results-row');
-            if (existingNoResults) {
-                existingNoResults.remove();
-            }
-            
-            if (visibleCount === 0 && query) {
-                const noResultsRow = document.createElement('tr');
-                noResultsRow.className = 'no-results-row';
-                noResultsRow.innerHTML = `
-                    <td colspan="10" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                        <div class="flex flex-col items-center">
-                            <i class="fas fa-search text-4xl mb-4 opacity-50"></i>
-                            <p class="text-lg font-medium">لا توجد نتائج للبحث</p>
-                            <p class="text-sm">جرب البحث بكلمات مختلفة</p>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(noResultsRow);
-            }
-        }
-
         // Table rendering functions
         function renderStudentsTable() {
             const tbody = document.getElementById('studentsTableBody');
@@ -2186,6 +2441,9 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            // Update search counter
+            updateSearchCounter('students', appState.students.length, appState.students.length);
         }
 
         function renderSupervisorsTable() {
@@ -2245,6 +2503,8 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            updateSearchCounter('supervisors', appState.supervisors.length, appState.supervisors.length);
         }
 
         function renderDriversTable() {
@@ -2304,6 +2564,8 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            updateSearchCounter('drivers', appState.drivers.length, appState.drivers.length);
         }
 
         function renderBusesTable() {
@@ -2369,6 +2631,8 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            updateSearchCounter('buses', appState.buses.length, appState.buses.length);
         }
 
         function renderFuelTable() {
@@ -2423,6 +2687,8 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            updateSearchCounter('fuel', appState.fuel.length, appState.fuel.length);
         }
 
         function updateTopFuelConsumers() {
@@ -2526,6 +2792,8 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            updateSearchCounter('maintenance', appState.maintenance.length, appState.maintenance.length);
         }
 
         function renderAttendanceTable() {
@@ -2680,6 +2948,8 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            updateSearchCounter('resignations', appState.resignations.length, appState.resignations.length);
         }
 
         // Utility function to check if date is expiring within 30 days
@@ -3882,6 +4152,8 @@
         window.importExcel = importExcel;
         window.filterTable = filterTable;
         window.performGlobalSearch = performGlobalSearch;
+        window.clearGlobalSearch = clearGlobalSearch;
+        window.clearSearch = clearSearch;
         window.updatePersonOptions = updatePersonOptions;
         window.updateResignationPersonOptions = updateResignationPersonOptions;
         window.closeModal = closeModal;
