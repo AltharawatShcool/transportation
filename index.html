@@ -299,6 +299,12 @@
             outline: none;
         }
 
+        .input-professional.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+            animation: shake 0.5s ease-in-out;
+        }
+
         /* Fixed Sidebar Styles */
         .sidebar-container {
             position: fixed;
@@ -751,6 +757,24 @@
         .clear-search-btn:hover {
             color: #ef4444;
             background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Error notification styles */
+        .duplicate-error-notification {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+            border: 1px solid #f87171;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .duplicate-error-notification i {
+            color: #dc2626;
         }
     </style>
 </head>
@@ -2044,6 +2068,26 @@
                 };
                 return icons[type] || 'info-circle';
             }
+        }
+
+        // دالة للتحقق من تكرار بيانات الطلاب
+        function checkDuplicateStudent(aysisNumber, name, excludeId = null) {
+            const duplicateAysis = appState.students.find(student => 
+                student.aysisNumber.toLowerCase() === aysisNumber.toLowerCase() && 
+                student.id !== excludeId
+            );
+            
+            const duplicateName = appState.students.find(student => 
+                student.name.toLowerCase().trim() === name.toLowerCase().trim() && 
+                student.id !== excludeId
+            );
+            
+            return {
+                aysisExists: !!duplicateAysis,
+                nameExists: !!duplicateName,
+                aysisStudent: duplicateAysis,
+                nameStudent: duplicateName
+            };
         }
 
         // Enhanced Global Search Functionality
@@ -3475,11 +3519,6 @@
             const submitText = document.getElementById('submitText');
             const submitLoading = document.getElementById('submitLoading');
 
-            isSubmitting = true;
-            submitBtn.disabled = true;
-            submitText.classList.add('hidden');
-            submitLoading.classList.remove('hidden');
-
             const data = {
                 aysisNumber: document.getElementById('aysisNumber').value.trim(),
                 name: document.getElementById('studentName').value.trim(),
@@ -3488,6 +3527,30 @@
                 supervisorId: document.getElementById('supervisorId').value,
                 driverId: document.getElementById('driverId').value
             };
+
+            // التحقق من عدم التكرار
+            const duplicateCheck = checkDuplicateStudent(data.aysisNumber, data.name, editingId);
+            
+            if (duplicateCheck.aysisExists) {
+                NotificationManager.show(`رقم الأسيس "${data.aysisNumber}" موجود بالفعل للطالب "${duplicateCheck.aysisStudent.name}"`, 'error');
+                document.getElementById('aysisNumber').focus();
+                document.getElementById('aysisNumber').classList.add('error');
+                setTimeout(() => document.getElementById('aysisNumber').classList.remove('error'), 3000);
+                return;
+            }
+            
+            if (duplicateCheck.nameExists) {
+                NotificationManager.show(`الاسم "${data.name}" موجود بالفعل برقم أسيس "${duplicateCheck.nameStudent.aysisNumber}"`, 'error');
+                document.getElementById('studentName').focus();
+                document.getElementById('studentName').classList.add('error');
+                setTimeout(() => document.getElementById('studentName').classList.remove('error'), 3000);
+                return;
+            }
+
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitLoading.classList.remove('hidden');
             
             try {
                 if (editingId) {
