@@ -1543,7 +1543,8 @@
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300">نوع الصيانة</th>
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300">تاريخ الصيانة</th>
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden sm:table-cell">رقم الحافلة</th>
-                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden md:table-cell">التكلفة</th>
+                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden md:table-cell">السائق</th>
+                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden lg:table-cell">التكلفة</th>
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden lg:table-cell">الوصف</th>
                                     <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300">العمليات</th>
                                 </tr>
@@ -3237,7 +3238,7 @@
             if (appState.maintenance.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                        <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-tools text-4xl mb-4 opacity-50"></i>
                                 <p class="text-lg font-medium">لا توجد بيانات صيانة</p>
@@ -3251,6 +3252,7 @@
             
             appState.maintenance.forEach(maintenance => {
                 const bus = appState.buses.find(b => b.id === maintenance.busId);
+                const driver = appState.drivers.find(d => d.id === maintenance.driverId);
                 
                 const row = document.createElement('tr');
                 row.className = 'table-row';
@@ -3262,7 +3264,8 @@
                         <div class="font-medium">${maintenance.date}</div>
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden sm:table-cell">${bus?.number || '-'}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden md:table-cell font-bold text-red-600">${maintenance.cost || '-'} درهم</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden md:table-cell">${driver?.name || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden lg:table-cell font-bold text-red-600">${maintenance.cost || '-'} درهم</td>
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden lg:table-cell">${maintenance.description || '-'}</td>
                     <td class="px-6 py-4">
                         <div class="flex justify-center gap-2">
@@ -3982,7 +3985,7 @@
             }
         }
 
-        // Form Functions - Part 6: Maintenance
+        // Form Functions - Part 6: Maintenance (المحدث مع إضافة السائق)
         function openMaintenanceForm(maintenanceId = null) {
             editingId = maintenanceId;
             const maintenance = maintenanceId ? appState.maintenance.find(m => m.id === maintenanceId) : null;
@@ -3991,6 +3994,10 @@
             
             const busOptions = appState.buses.map(b => 
                 `<option value="${b.id}" ${maintenance?.busId === b.id ? 'selected' : ''}>${b.number} - ${b.company}</option>`
+            ).join('');
+            
+            const driverOptions = appState.drivers.map(d => 
+                `<option value="${d.id}" ${maintenance?.driverId === d.id ? 'selected' : ''}>${d.name}</option>`
             ).join('');
             
             document.getElementById('modalContent').innerHTML = `
@@ -4007,9 +4014,16 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">الحافلة <span class="text-red-500">*</span></label>
-                        <select id="busId" class="input-professional" required>
+                        <select id="busId" class="input-professional" required onchange="updateDriverBasedOnBus()">
                             <option value="">اختر الحافلة</option>
                             ${busOptions}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">السائق</label>
+                        <select id="driverId" class="input-professional">
+                            <option value="">اختر السائق</option>
+                            ${driverOptions}
                         </select>
                     </div>
                     <div class="form-group">
@@ -4040,6 +4054,26 @@
             showModal();
         }
 
+        // دالة لتحديث السائق بناءً على الحافلة المختارة
+        function updateDriverBasedOnBus() {
+            const busId = document.getElementById('busId').value;
+            const driverSelect = document.getElementById('driverId');
+            
+            if (!busId) {
+                driverSelect.innerHTML = '<option value="">اختر السائق</option>';
+                appState.drivers.forEach(driver => {
+                    driverSelect.innerHTML += `<option value="${driver.id}">${driver.name}</option>`;
+                });
+                return;
+            }
+            
+            // جلب السائق المناسب للحافلة (يمكن تطوير هذه الخاصية لربط السائق بالحافلة)
+            driverSelect.innerHTML = '<option value="">اختر السائق</option>';
+            appState.drivers.forEach(driver => {
+                driverSelect.innerHTML += `<option value="${driver.id}">${driver.name}</option>`;
+            });
+        }
+
         async function handleMaintenanceSubmit(e) {
             e.preventDefault();
             
@@ -4057,6 +4091,7 @@
             const data = {
                 type: document.getElementById('maintenanceType').value,
                 busId: document.getElementById('busId').value,
+                driverId: document.getElementById('driverId').value,
                 date: document.getElementById('maintenanceDate').value,
                 cost: document.getElementById('cost').value,
                 description: document.getElementById('description').value.trim()
@@ -4596,6 +4631,7 @@
             updateDashboardStats();
         }
 
+        // Enhanced Export Function with Arabic Support
         function exportToExcel(section) {
             try {
                 const data = appState[section];
@@ -4605,18 +4641,32 @@
                     return;
                 }
 
+                // Convert data to Arabic format
+                const arabicData = convertDataToArabic(section, data);
+                
                 // Create a new workbook
                 const wb = XLSX.utils.book_new();
                 
                 // Convert data to worksheet
-                const ws = XLSX.utils.json_to_sheet(data);
+                const ws = XLSX.utils.json_to_sheet(arabicData);
                 
-                // Add the worksheet to the workbook
-                XLSX.utils.book_append_sheet(wb, ws, section);
+                // Add the worksheet to the workbook with Arabic name
+                const sectionNames = {
+                    'students': 'الطلاب',
+                    'supervisors': 'المشرفات',
+                    'drivers': 'السائقين',
+                    'buses': 'الحافلات',
+                    'fuel': 'الديزل',
+                    'maintenance': 'الصيانة',
+                    'attendance': 'الحضور والانصراف',
+                    'resignations': 'الاستقالات والإجازات'
+                };
+                
+                XLSX.utils.book_append_sheet(wb, ws, sectionNames[section] || section);
                 
                 // Generate file name with current date
-                const date = new Date().toISOString().split('T')[0];
-                const fileName = `${section}_${date}.xlsx`;
+                const date = new Date().toLocaleDateString('ar-SA');
+                const fileName = `${sectionNames[section]}_${date}.xlsx`;
                 
                 // Save the file
                 XLSX.writeFile(wb, fileName);
@@ -4626,6 +4676,121 @@
                 console.error('Export error:', error);
                 NotificationManager.show('حدث خطأ أثناء التصدير', 'error');
             }
+        }
+
+        // Function to convert data to Arabic headers and content
+        function convertDataToArabic(section, data) {
+            const arabicMappings = {
+                'students': {
+                    'aysisNumber': 'رقم الأسيس',
+                    'name': 'اسم الطالب',
+                    'grade': 'الصف',
+                    'area': 'المنطقة',
+                    'supervisorId': 'المشرفة',
+                    'driverId': 'السائق'
+                },
+                'supervisors': {
+                    'permitNumber': 'رقم التصريح',
+                    'name': 'اسم المشرفة',
+                    'phone': 'رقم الهاتف',
+                    'expiryDate': 'تاريخ انتهاء التصريح',
+                    'area': 'المنطقة'
+                },
+                'drivers': {
+                    'permitNumber': 'رقم التصريح',
+                    'name': 'اسم السائق',
+                    'phone': 'رقم الهاتف',
+                    'area': 'المنطقة',
+                    'expiryDate': 'تاريخ انتهاء التصريح'
+                },
+                'buses': {
+                    'number': 'رقم الحافلة',
+                    'company': 'اسم الشركة',
+                    'type': 'النوع',
+                    'dotNumber': 'رقم DOT',
+                    'dotExpiryDate': 'تاريخ انتهاء DOT',
+                    'ownershipExpiryDate': 'تاريخ انتهاء الملكية'
+                },
+                'fuel': {
+                    'busId': 'رقم الحافلة',
+                    'driverId': 'اسم السائق',
+                    'date': 'تاريخ التعبئة',
+                    'amount': 'المبلغ (درهم)'
+                },
+                'maintenance': {
+                    'type': 'نوع الصيانة',
+                    'date': 'تاريخ الصيانة',
+                    'busId': 'رقم الحافلة',
+                    'driverId': 'السائق',
+                    'cost': 'التكلفة (درهم)',
+                    'description': 'الوصف'
+                },
+                'attendance': {
+                    'type': 'النوع',
+                    'personId': 'الاسم',
+                    'date': 'التاريخ',
+                    'time': 'الوقت',
+                    'status': 'الحالة'
+                },
+                'resignations': {
+                    'personType': 'نوع الشخص',
+                    'personId': 'الاسم',
+                    'status': 'الحالة',
+                    'date': 'التاريخ',
+                    'reason': 'السبب'
+                }
+            };
+
+            const statusMappings = {
+                'present': 'حاضر',
+                'absent': 'غائب',
+                'driver': 'سائق',
+                'supervisor': 'مشرفة',
+                'resignation': 'استقالة',
+                'termination': 'إنهاء خدمات',
+                'leave': 'إجازة',
+                'أشوك': 'أشوك',
+                'روزا': 'روزا'
+            };
+
+            const mapping = arabicMappings[section] || {};
+            
+            return data.map(item => {
+                const arabicItem = {};
+                
+                for (const [englishKey, arabicKey] of Object.entries(mapping)) {
+                    let value = item[englishKey];
+                    
+                    // Convert IDs to names
+                    if (englishKey === 'supervisorId' && value) {
+                        const supervisor = appState.supervisors.find(s => s.id === value);
+                        value = supervisor ? supervisor.name : value;
+                    } else if (englishKey === 'driverId' && value) {
+                        const driver = appState.drivers.find(d => d.id === value);
+                        value = driver ? driver.name : value;
+                    } else if (englishKey === 'busId' && value) {
+                        const bus = appState.buses.find(b => b.id === value);
+                        value = bus ? bus.number : value;
+                    } else if (englishKey === 'personId' && value) {
+                        let person = null;
+                        if (item.type === 'driver') {
+                            person = appState.drivers.find(d => d.id === value);
+                        } else if (item.type === 'supervisor') {
+                            person = appState.supervisors.find(s => s.id === value);
+                        }
+                        value = person ? person.name : value;
+                    }
+                    
+                    // Convert status values to Arabic
+                    if (typeof value === 'string' && statusMappings[value]) {
+                        value = statusMappings[value];
+                    }
+                    
+                    arabicItem[arabicKey] = value || '';
+                }
+                
+                return arabicItem;
+            });
         }
 
         // Modal functions
@@ -4663,6 +4828,7 @@
         window.clearSearch = clearSearch;
         window.updatePersonOptions = updatePersonOptions;
         window.updateResignationPersonOptions = updateResignationPersonOptions;
+        window.updateDriverBasedOnBus = updateDriverBasedOnBus;
         window.closeModal = closeModal;
         window.viewStudent = viewStudent;
         window.editStudent = editStudent;
