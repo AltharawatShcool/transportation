@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة النقل المدرسي مع الدردشة - الإصدار الشامل المحدث</title>
+    <title>نظام إدارة النقل المدرسي - الإصدار الشامل</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -85,11 +85,6 @@
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
-        }
-
-        @keyframes messageSlideIn {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
         /* Gradient Backgrounds */
@@ -299,12 +294,6 @@
             outline: none;
         }
 
-        .input-professional.error {
-            border-color: #ef4444;
-            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
-            animation: shake 0.5s ease-in-out;
-        }
-
         /* Fixed Sidebar Styles */
         .sidebar-container {
             position: fixed;
@@ -354,128 +343,6 @@
             visibility: visible;
         }
 
-        /* Messages/Chat Styles */
-        .chat-container {
-            height: 500px;
-            border: 2px solid #e5e7eb;
-            border-radius: 16px;
-            overflow: hidden;
-            background: white;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-header {
-            background: linear-gradient(135deg, #5D5CDE, #667eea);
-            color: white;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            background: #f8fafc;
-            max-height: 350px;
-        }
-
-        .chat-input-container {
-            padding: 16px;
-            border-top: 1px solid #e5e7eb;
-            background: white;
-        }
-
-        .message {
-            margin-bottom: 12px;
-            animation: messageSlideIn 0.3s ease-out;
-        }
-
-        .message-sent {
-            text-align: left;
-        }
-
-        .message-received {
-            text-align: right;
-        }
-
-        .message-bubble {
-            display: inline-block;
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            word-wrap: break-word;
-            position: relative;
-        }
-
-        .message-sent .message-bubble {
-            background: linear-gradient(135deg, #5D5CDE, #667eea);
-            color: white;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-received .message-bubble {
-            background: #e5e7eb;
-            color: #374151;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message-time {
-            font-size: 11px;
-            opacity: 0.7;
-            margin-top: 4px;
-        }
-
-        .message-sender {
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            opacity: 0.8;
-        }
-
-        .unread-indicator {
-            background: #ef4444;
-            color: white;
-            border-radius: 50%;
-            width: 8px;
-            height: 8px;
-            display: inline-block;
-            margin-right: 8px;
-            animation: pulse 2s infinite;
-        }
-
-        .online-status {
-            width: 10px;
-            height: 10px;
-            background: #10b981;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-            animation: pulse 2s infinite;
-        }
-
-        /* Chat notification */
-        .chat-notification {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: linear-gradient(135deg, #5D5CDE, #667eea);
-            color: white;
-            padding: 12px 16px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(93, 92, 222, 0.3);
-            transform: translateX(100%);
-            transition: transform 0.3s ease-in-out;
-            z-index: 1001;
-            max-width: 300px;
-        }
-
-        .chat-notification.show {
-            transform: translateX(0);
-        }
-
         /* Dark Mode Support */
         .dark {
             background-color: #0f172a;
@@ -514,25 +381,6 @@
         .dark .sidebar-container {
             background: #1e293b;
             border-left: 1px solid #475569;
-        }
-
-        .dark .chat-container {
-            border-color: #475569;
-            background: #1e293b;
-        }
-
-        .dark .chat-messages {
-            background: #334155;
-        }
-
-        .dark .chat-input-container {
-            background: #1e293b;
-            border-top-color: #475569;
-        }
-
-        .dark .message-received .message-bubble {
-            background: #475569;
-            color: #e5e7eb;
         }
 
         /* Loading Spinner */
@@ -611,14 +459,6 @@
 
             .main-content {
                 margin-right: 0;
-            }
-
-            .chat-container {
-                height: 400px;
-            }
-
-            .chat-messages {
-                max-height: 250px;
             }
         }
 
@@ -759,22 +599,30 @@
             background: rgba(239, 68, 68, 0.1);
         }
 
-        /* Error notification styles */
-        .duplicate-error-notification {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
-            color: #991b1b;
-            border: 1px solid #f87171;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            animation: shake 0.5s ease-in-out;
+        /* Filters Container */
+        .filters-container {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
         }
 
-        .duplicate-error-notification i {
-            color: #dc2626;
+        .filters-container.show {
+            display: block;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .dark .filters-container {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        .filter-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
         }
     </style>
 </head>
@@ -784,17 +632,6 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg p-6 flex flex-col items-center">
             <div class="loading-spinner mb-4"></div>
             <p class="text-gray-600 dark:text-gray-300">جاري المعالجة...</p>
-        </div>
-    </div>
-
-    <!-- Chat Notification -->
-    <div id="chatNotification" class="chat-notification">
-        <div class="flex items-center">
-            <i class="fas fa-comment-alt ml-2"></i>
-            <div>
-                <div class="font-semibold">رسالة جديدة</div>
-                <div id="notificationContent" class="text-sm opacity-90"></div>
-            </div>
         </div>
     </div>
 
@@ -812,7 +649,7 @@
                     <i class="fas fa-bus text-primary text-2xl"></i>
                 </div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">نظام إدارة النقل المدرسي</h1>
-                <p class="text-gray-600 dark:text-gray-300 mt-2">النظام الشامل مع الدردشة المدمجة</p>
+                <p class="text-gray-600 dark:text-gray-300 mt-2">النظام الشامل والمتكامل</p>
             </div>
             
             <form id="loginForm" class="space-y-6">
@@ -851,19 +688,11 @@
                         </div>
                         <div>
                             <h1 class="text-xl font-bold text-gray-900 dark:text-white">نظام إدارة النقل المدرسي</h1>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">النظام الشامل مع الدردشة المدمجة</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">النظام الشامل والمتكامل</p>
                         </div>
                     </div>
                     
                     <div class="flex items-center space-x-4 space-x-reverse">
-                        <!-- Messages Icon -->
-                        <div class="relative">
-                            <button id="messagesToggle" class="relative p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                <i class="fas fa-comments"></i>
-                                <span id="messagesBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
-                            </button>
-                        </div>
-                        
                         <!-- Notifications Bell -->
                         <div class="relative">
                             <button id="notificationBtn" class="relative p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
@@ -930,11 +759,6 @@
                         <i class="fas fa-user-times ml-3 group-hover:animate-pulse"></i>
                         <span>الاستقالات والإجازات</span>
                     </button>
-                    <button class="nav-item w-full text-right px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white rounded-lg transition-all duration-300 group relative" data-section="messages">
-                        <i class="fas fa-comments ml-3 group-hover:animate-pulse"></i>
-                        <span>الرسائل والدردشة</span>
-                        <span id="unreadBadge" class="hidden absolute top-1 left-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
-                    </button>
                 </div>
             </nav>
         </aside>
@@ -951,7 +775,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <h2 class="text-3xl font-bold mb-2">لوحة التحكم الرئيسية</h2>
-                                <p class="text-lg opacity-90">مرحباً بك في النظام الشامل لإدارة النقل المدرسي مع الدردشة المدمجة</p>
+                                <p class="text-lg opacity-90">مرحباً بك في النظام الشامل لإدارة النقل المدرسي</p>
                             </div>
                             <div class="hidden lg:block">
                                 <i class="fas fa-tachometer-alt text-6xl opacity-20"></i>
@@ -1058,12 +882,12 @@
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">إضافة مشرفة جديدة للنظام</p>
                         </div>
                         
-                        <div class="quick-action-card" onclick="showSection('messages');">
-                            <div class="bg-purple-500 p-4 rounded-full inline-block mb-4">
-                                <i class="fas fa-comments text-white text-2xl"></i>
+                        <div class="quick-action-card" onclick="showSection('buses'); setTimeout(() => openBusForm(), 300);">
+                            <div class="gradient-danger p-4 rounded-full inline-block mb-4">
+                                <i class="fas fa-bus text-white text-2xl"></i>
                             </div>
-                            <h4 class="font-semibold text-gray-900 dark:text-white">الدردشة</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">تواصل مع فريق الإدارة</p>
+                            <h4 class="font-semibold text-gray-900 dark:text-white">إضافة حافلة</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">إضافة حافلة جديدة للنظام</p>
                         </div>
                     </div>
                 </div>
@@ -1100,54 +924,6 @@
                 </div>
             </div>
 
-            <!-- Messages Section -->
-            <div id="messages" class="section hidden">
-                <div class="section-header">
-                    <div class="section-header-content">
-                        <div class="flex items-center justify-between mb-4">
-                            <button class="back-btn" onclick="showSection('dashboard')">
-                                <i class="fas fa-arrow-right"></i>
-                                <span>العودة</span>
-                            </button>
-                            <div class="hidden lg:block">
-                                <i class="fas fa-comments text-6xl opacity-20"></i>
-                            </div>
-                        </div>
-                        <h2 class="text-3xl font-bold mb-2">الرسائل والدردشة</h2>
-                        <p class="text-lg opacity-90">تواصل مباشر مع فريق الإدارة وتطبيق المدير</p>
-                    </div>
-                </div>
-
-                <div class="card-professional">
-                    <div class="chat-container">
-                        <div class="chat-header">
-                            <div class="flex items-center">
-                                <div class="online-status"></div>
-                                <i class="fas fa-user-crown ml-2"></i>
-                                <span class="font-semibold">تطبيق المدير الشامل</span>
-                            </div>
-                            <div class="text-sm opacity-75">متصل الآن</div>
-                        </div>
-                        
-                        <div class="chat-messages" id="chatMessages">
-                            <div class="text-center text-gray-500 py-4">
-                                <i class="fas fa-comments text-3xl mb-2"></i>
-                                <p>ابدأ محادثة جديدة مع فريق الإدارة</p>
-                            </div>
-                        </div>
-                        
-                        <div class="chat-input-container">
-                            <div class="flex gap-2">
-                                <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا..." class="input-professional flex-1" onkeypress="handleMessageKeyPress(event)">
-                                <button onclick="sendMessage()" class="btn-professional px-4">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Students Section -->
             <div id="students" class="section hidden">
                 <div class="section-header">
@@ -1177,11 +953,52 @@
                         <button onclick="exportToExcel('students')" class="gradient-primary text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
                             <i class="fas fa-download ml-2"></i>تصدير Excel
                         </button>
+                        <button id="toggleFiltersBtn" onclick="toggleStudentFilters()" class="gradient-warning text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
+                            <i class="fas fa-filter ml-2"></i>فلاتر متقدمة
+                        </button>
                     </div>
                     <button id="addStudentBtn" class="btn-professional">
                         <i class="fas fa-plus"></i>
                         <span>إضافة طالب جديد</span>
                     </button>
+                </div>
+
+                <!-- Advanced Filters -->
+                <div id="studentFilters" class="filters-container">
+                    <div class="filter-group">
+                        <div class="form-group">
+                            <label class="form-label">تصفية حسب السنة الدراسية</label>
+                            <select id="academicYearFilter" class="input-professional" onchange="filterStudentsByFilters()">
+                                <option value="">جميع السنوات</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">تصفية حسب الفصل الدراسي</label>
+                            <select id="semesterFilter" class="input-professional" onchange="filterStudentsByFilters()">
+                                <option value="">جميع الفصول</option>
+                                <option value="الفصل الأول">الفصل الأول</option>
+                                <option value="الفصل الثاني">الفصل الثاني</option>
+                                <option value="الفصل الثالث">الفصل الثالث</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">تصفية حسب الصف</label>
+                            <select id="gradeFilter" class="input-professional" onchange="filterStudentsByFilters()">
+                                <option value="">جميع الصفوف</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">تصفية حسب المنطقة</label>
+                            <select id="areaFilter" class="input-professional" onchange="filterStudentsByFilters()">
+                                <option value="">جميع المناطق</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-4">
+                        <button onclick="clearAllStudentFilters()" class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
+                            <i class="fas fa-times ml-2"></i>إلغاء جميع الفلاتر
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="card-professional">
@@ -1202,9 +1019,11 @@
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300">رقم الاسيس</th>
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300">اسم الطالب</th>
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden sm:table-cell">الصف</th>
-                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden md:table-cell">المنطقة</th>
-                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden lg:table-cell">المشرفة</th>
-                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden lg:table-cell">السائق</th>
+                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden md:table-cell">السنة الدراسية</th>
+                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden lg:table-cell">الفصل الدراسي</th>
+                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden lg:table-cell">المنطقة</th>
+                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden xl:table-cell">المشرفة</th>
+                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden xl:table-cell">السائق</th>
                                     <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300">العمليات</th>
                                 </tr>
                             </thead>
@@ -1543,8 +1362,7 @@
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300">نوع الصيانة</th>
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300">تاريخ الصيانة</th>
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden sm:table-cell">رقم الحافلة</th>
-                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden md:table-cell">السائق</th>
-                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden lg:table-cell">التكلفة</th>
+                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden md:table-cell">التكلفة</th>
                                     <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden lg:table-cell">الوصف</th>
                                     <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300">العمليات</th>
                                 </tr>
@@ -1570,7 +1388,7 @@
                             </div>
                         </div>
                         <h2 class="text-3xl font-bold mb-2">الحضور والانصراف</h2>
-                        <p class="text-lg opacity-90">إدارة حضور السائقين والمشرفات مع إمكانية التعديل والحذف</p>
+                        <p class="text-lg opacity-90">إدارة حضور السائقين والمشرفات</p>
                     </div>
                 </div>
 
@@ -1592,32 +1410,39 @@
                     </button>
                 </div>
                 
-                <div class="card-professional">
-                    <div class="mb-6">
-                        <div class="search-container">
-                            <input type="text" id="attendanceSearch" placeholder="البحث في سجلات الحضور..." class="input-professional search-input" oninput="filterTable('attendance')">
-                            <button id="clearAttendanceSearch" class="clear-search-btn hidden" onclick="clearSearch('attendance')">
-                                <i class="fas fa-times"></i>
-                            </button>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card-professional">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">حضور السائقين اليوم</h3>
+                        <div class="table-professional overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">اسم السائق</th>
+                                        <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden sm:table-cell">الوقت</th>
+                                        <th class="px-4 py-3 text-center text-sm font-bold text-gray-700 dark:text-gray-300">الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="driversAttendanceBody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                </tbody>
+                            </table>
                         </div>
-                        <div id="attendanceSearchCounter" class="text-sm text-gray-500 dark:text-gray-400 mt-2"></div>
                     </div>
                     
-                    <div class="table-professional overflow-x-auto">
-                        <table class="min-w-full">
-                            <thead class="table-header">
-                                <tr>
-                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300">الاسم</th>
-                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden sm:table-cell">النوع</th>
-                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300">التاريخ</th>
-                                    <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden md:table-cell">الوقت</th>
-                                    <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300">الحالة</th>
-                                    <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-300">العمليات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="attendanceTableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
-                            </tbody>
-                        </table>
+                    <div class="card-professional">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">حضور المشرفات اليوم</h3>
+                        <div class="table-professional overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">اسم المشرفة</th>
+                                        <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300 hidden sm:table-cell">الوقت</th>
+                                        <th class="px-4 py-3 text-center text-sm font-bold text-gray-700 dark:text-gray-300">الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="supervisorsAttendanceBody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1774,194 +1599,6 @@
             }
         }
 
-        // Chat Manager Class
-        class ChatManager {
-            constructor() {
-                this.messages = [];
-                this.unreadCount = 0;
-                this.isListening = false;
-                this.currentUser = 'admin';
-                this.targetUser = 'manager';
-            }
-
-            async initialize() {
-                await this.loadMessages();
-                this.setupRealtimeListener();
-                this.updateUnreadBadge();
-            }
-
-            async loadMessages() {
-                try {
-                    const messages = await DatabaseManager.getAllData('messages');
-                    this.messages = messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                    this.renderMessages();
-                } catch (error) {
-                    console.error('Error loading messages:', error);
-                }
-            }
-
-            setupRealtimeListener() {
-                if (this.isListening) return;
-                
-                this.isListening = true;
-                db.collection('messages')
-                    .orderBy('timestamp', 'asc')
-                    .onSnapshot((snapshot) => {
-                        snapshot.docChanges().forEach((change) => {
-                            if (change.type === 'added') {
-                                const message = { id: change.doc.id, ...change.doc.data() };
-                                
-                                // Only add if it's a new message (not from initial load)
-                                if (!this.messages.find(m => m.id === message.id)) {
-                                    this.messages.push(message);
-                                    this.renderNewMessage(message);
-                                    
-                                    // Show notification if message is from other user
-                                    if (message.sender !== this.currentUser) {
-                                        this.showChatNotification(message);
-                                        this.unreadCount++;
-                                        this.updateUnreadBadge();
-                                    }
-                                }
-                            }
-                        });
-                    });
-            }
-
-            async sendMessage(text) {
-                if (!text.trim()) return;
-
-                const message = {
-                    text: text.trim(),
-                    sender: this.currentUser,
-                    recipient: this.targetUser,
-                    timestamp: new Date().toISOString(),
-                    read: false
-                };
-
-                try {
-                    const messageId = await DatabaseManager.saveData('messages', message);
-                    message.id = messageId;
-                    
-                    // Clear input
-                    document.getElementById('messageInput').value = '';
-                    
-                    NotificationManager.show('تم إرسال الرسالة بنجاح', 'success');
-                } catch (error) {
-                    console.error('Error sending message:', error);
-                    NotificationManager.show('حدث خطأ أثناء إرسال الرسالة', 'error');
-                }
-            }
-
-            renderMessages() {
-                const container = document.getElementById('chatMessages');
-                container.innerHTML = '';
-
-                if (this.messages.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center text-gray-500 py-4">
-                            <i class="fas fa-comments text-3xl mb-2"></i>
-                            <p>ابدأ محادثة جديدة مع فريق الإدارة</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                this.messages.forEach(message => {
-                    this.renderMessage(message);
-                });
-
-                this.scrollToBottom();
-            }
-
-            renderNewMessage(message) {
-                this.renderMessage(message);
-                this.scrollToBottom();
-            }
-
-            renderMessage(message) {
-                const container = document.getElementById('chatMessages');
-                const messageDiv = document.createElement('div');
-                
-                const isOwn = message.sender === this.currentUser;
-                const time = new Date(message.timestamp).toLocaleTimeString('ar-SA', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-
-                messageDiv.className = `message ${isOwn ? 'message-sent' : 'message-received'}`;
-                messageDiv.innerHTML = `
-                    ${!isOwn ? `<div class="message-sender">${this.getSenderName(message.sender)}</div>` : ''}
-                    <div class="message-bubble">
-                        <div>${message.text}</div>
-                        <div class="message-time">${time}</div>
-                    </div>
-                `;
-
-                container.appendChild(messageDiv);
-            }
-
-            getSenderName(sender) {
-                const names = {
-                    'admin': 'نظام الإدارة',
-                    'manager': 'تطبيق المدير'
-                };
-                return names[sender] || sender;
-            }
-
-            scrollToBottom() {
-                const container = document.getElementById('chatMessages');
-                container.scrollTop = container.scrollHeight;
-            }
-
-            showChatNotification(message) {
-                const notification = document.getElementById('chatNotification');
-                const content = document.getElementById('notificationContent');
-                
-                content.textContent = message.text.length > 50 ? 
-                    message.text.substring(0, 50) + '...' : 
-                    message.text;
-
-                notification.classList.add('show');
-                
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 5000);
-            }
-
-            updateUnreadBadge() {
-                const badge = document.getElementById('unreadBadge');
-                const messagesBadge = document.getElementById('messagesBadge');
-                
-                if (this.unreadCount > 0) {
-                    badge.textContent = this.unreadCount;
-                    badge.classList.remove('hidden');
-                    messagesBadge.textContent = this.unreadCount;
-                    messagesBadge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                    messagesBadge.classList.add('hidden');
-                }
-            }
-
-            markAsRead() {
-                this.unreadCount = 0;
-                this.updateUnreadBadge();
-                
-                // Mark messages as read in database
-                this.messages.forEach(async (message) => {
-                    if (message.sender !== this.currentUser && !message.read) {
-                        try {
-                            await DatabaseManager.updateData('messages', message.id, { read: true });
-                            message.read = true;
-                        } catch (error) {
-                            console.error('Error marking message as read:', error);
-                        }
-                    }
-                });
-            }
-        }
-
         // Session management
         class SessionManager {
             static setLoggedIn(username) {
@@ -2016,7 +1653,6 @@
         let editingId = null;
         let sidebarOpen = false;
         let isSubmitting = false;
-        let chatManager = null;
 
         // Application State
         const appState = {
@@ -2029,6 +1665,16 @@
             attendance: [],
             resignations: []
         };
+
+        // Generate academic years from current year to 2040
+        function generateAcademicYears() {
+            const currentYear = new Date().getFullYear();
+            const years = [];
+            for (let year = currentYear; year <= 2040; year++) {
+                years.push(`${year}-${year + 1}`);
+            }
+            return years;
+        }
 
         // Enhanced Notification System
         class NotificationManager {
@@ -2071,26 +1717,6 @@
             }
         }
 
-        // دالة للتحقق من تكرار بيانات الطلاب
-        function checkDuplicateStudent(aysisNumber, name, excludeId = null) {
-            const duplicateAysis = appState.students.find(student => 
-                student.aysisNumber.toLowerCase() === aysisNumber.toLowerCase() && 
-                student.id !== excludeId
-            );
-            
-            const duplicateName = appState.students.find(student => 
-                student.name.toLowerCase().trim() === name.toLowerCase().trim() && 
-                student.id !== excludeId
-            );
-            
-            return {
-                aysisExists: !!duplicateAysis,
-                nameExists: !!duplicateName,
-                aysisStudent: duplicateAysis,
-                nameStudent: duplicateName
-            };
-        }
-
         // Enhanced Global Search Functionality
         function performGlobalSearch() {
             const searchTerm = document.getElementById('globalSearch').value.toLowerCase().trim();
@@ -2118,14 +1744,16 @@
                     student.name,
                     student.aysisNumber,
                     student.grade,
-                    student.area
+                    student.area,
+                    student.academicYear,
+                    student.semester
                 ].filter(Boolean).join(' ').toLowerCase();
                 
                 if (searchFields.includes(searchTerm)) {
                     results.push({
                         type: 'students',
                         title: student.name,
-                        subtitle: `طالب - ${student.grade} - ${student.area}`,
+                        subtitle: `طالب - ${student.grade} - ${student.academicYear || ''} - ${student.semester || ''}`,
                         icon: 'fa-user-graduate',
                         relevance: calculateRelevance(searchTerm, searchFields),
                         action: () => { 
@@ -2359,6 +1987,143 @@
             // Update search results counter
             updateSearchCounter(section, visibleCount, rows.length);
         }
+
+        // Student filters functions
+        function toggleStudentFilters() {
+            const filtersContainer = document.getElementById('studentFilters');
+            const btn = document.getElementById('toggleFiltersBtn');
+            
+            if (filtersContainer.classList.contains('show')) {
+                filtersContainer.classList.remove('show');
+                btn.innerHTML = '<i class="fas fa-filter ml-2"></i>فلاتر متقدمة';
+            } else {
+                filtersContainer.classList.add('show');
+                btn.innerHTML = '<i class="fas fa-filter ml-2"></i>إخفاء الفلاتر';
+                populateFilterDropdowns();
+            }
+        }
+
+        function populateFilterDropdowns() {
+            // Populate academic years
+            const academicYearFilter = document.getElementById('academicYearFilter');
+            if (academicYearFilter) {
+                academicYearFilter.innerHTML = '<option value="">جميع السنوات</option>';
+                const years = new Set();
+                appState.students.forEach(student => {
+                    if (student.academicYear) {
+                        years.add(student.academicYear);
+                    }
+                });
+                Array.from(years).sort().forEach(year => {
+                    academicYearFilter.innerHTML += `<option value="${year}">${year}</option>`;
+                });
+            }
+
+            // Populate grades
+            const gradeFilter = document.getElementById('gradeFilter');
+            if (gradeFilter) {
+                gradeFilter.innerHTML = '<option value="">جميع الصفوف</option>';
+                const grades = new Set();
+                appState.students.forEach(student => {
+                    if (student.grade) {
+                        grades.add(student.grade);
+                    }
+                });
+                Array.from(grades).sort().forEach(grade => {
+                    gradeFilter.innerHTML += `<option value="${grade}">${grade}</option>`;
+                });
+            }
+
+            // Populate areas
+            const areaFilter = document.getElementById('areaFilter');
+            if (areaFilter) {
+                areaFilter.innerHTML = '<option value="">جميع المناطق</option>';
+                const areas = new Set();
+                appState.students.forEach(student => {
+                    if (student.area) {
+                        areas.add(student.area);
+                    }
+                });
+                Array.from(areas).sort().forEach(area => {
+                    areaFilter.innerHTML += `<option value="${area}">${area}</option>`;
+                });
+            }
+        }
+
+        function filterStudentsByFilters() {
+            const academicYearFilter = document.getElementById('academicYearFilter').value;
+            const semesterFilter = document.getElementById('semesterFilter').value;
+            const gradeFilter = document.getElementById('gradeFilter').value;
+            const areaFilter = document.getElementById('areaFilter').value;
+            const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+            
+            const tbody = document.getElementById('studentsTableBody');
+            if (!tbody) return;
+            
+            const rows = tbody.querySelectorAll('tr:not(.no-results-row)');
+            let visibleCount = 0;
+            
+            // Remove previous no results message
+            const existingNoResults = tbody.querySelector('.no-results-row');
+            if (existingNoResults) {
+                existingNoResults.remove();
+            }
+            
+            rows.forEach((row, index) => {
+                const studentId = row.dataset.studentId;
+                const student = appState.students.find(s => s.id === studentId);
+                
+                if (!student) return;
+                
+                const text = row.textContent.toLowerCase();
+                const matchesSearch = !searchTerm || text.includes(searchTerm);
+                const matchesYear = !academicYearFilter || student.academicYear === academicYearFilter;
+                const matchesSemester = !semesterFilter || student.semester === semesterFilter;
+                const matchesGrade = !gradeFilter || student.grade === gradeFilter;
+                const matchesArea = !areaFilter || student.area === areaFilter;
+                
+                const isVisible = matchesSearch && matchesYear && matchesSemester && matchesGrade && matchesArea;
+                
+                if (isVisible) {
+                    row.style.display = '';
+                    visibleCount++;
+                    row.style.animation = `fadeInUp 0.3s ease-out ${index * 0.05}s both`;
+                } else {
+                    row.style.display = 'none';
+                    row.style.animation = '';
+                }
+            });
+            
+            // Show no results message
+            if (visibleCount === 0) {
+                const noResultsRow = document.createElement('tr');
+                noResultsRow.className = 'no-results-row';
+                noResultsRow.innerHTML = `
+                    <td colspan="9" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                        <div class="flex flex-col items-center" style="animation: fadeInUp 0.5s ease-out;">
+                            <i class="fas fa-filter text-4xl mb-4 opacity-50"></i>
+                            <p class="text-lg font-medium">لا توجد نتائج تطابق المرشحات المحددة</p>
+                            <button onclick="clearAllStudentFilters()" class="mt-3 px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-80 transition-colors">
+                                <i class="fas fa-times ml-2"></i>إلغاء جميع الفلاتر
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(noResultsRow);
+            }
+            
+            // Update search results counter
+            updateSearchCounter('students', visibleCount, rows.length);
+        }
+
+        function clearAllStudentFilters() {
+            document.getElementById('academicYearFilter').value = '';
+            document.getElementById('semesterFilter').value = '';
+            document.getElementById('gradeFilter').value = '';
+            document.getElementById('areaFilter').value = '';
+            document.getElementById('studentSearch').value = '';
+            filterStudentsByFilters();
+        }
         
         // Clear search function
         function clearSearch(section) {
@@ -2370,7 +2135,11 @@
                 if (clearBtn) {
                     clearBtn.classList.add('hidden');
                 }
-                filterTable(section);
+                if (section === 'students') {
+                    filterStudentsByFilters();
+                } else {
+                    filterTable(section);
+                }
                 searchInput.focus();
             }
         }
@@ -2468,10 +2237,6 @@
             document.getElementById('usernameDisplay').textContent = `مرحباً، ${SessionManager.getUsername()}`;
             loadInitialData();
             showSection('dashboard');
-            
-            // Initialize chat
-            chatManager = new ChatManager();
-            chatManager.initialize();
         }
 
         function showLoginPage() {
@@ -2510,14 +2275,6 @@
                 if (e.target === this) closeModal();
             });
             
-            // Messages toggle
-            document.getElementById('messagesToggle').addEventListener('click', () => {
-                showSection('messages');
-                if (chatManager) {
-                    chatManager.markAsRead();
-                }
-            });
-
             // Add buttons
             document.getElementById('addStudentBtn').addEventListener('click', () => openStudentForm());
             document.getElementById('addSupervisorBtn').addEventListener('click', () => openSupervisorForm());
@@ -2567,22 +2324,6 @@
             });
         }
 
-        // Chat Functions
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-            
-            if (text && chatManager) {
-                chatManager.sendMessage(text);
-            }
-        }
-
-        function handleMessageKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
         function showLoading() {
             document.getElementById('loadingOverlay').classList.remove('hidden');
             document.getElementById('loadingOverlay').classList.add('flex');
@@ -2619,11 +2360,6 @@
 
         // Enhanced section transition with animation
         function showSection(sectionName) {
-            // Mark messages as read when entering messages section
-            if (sectionName === 'messages' && chatManager) {
-                chatManager.markAsRead();
-            }
-
             // Hide current section with animation
             const currentSectionElement = document.querySelector('.section:not(.hidden)');
             if (currentSectionElement && currentSectionElement.id !== sectionName) {
@@ -2694,7 +2430,7 @@
                     setTimeout(() => {
                         SessionManager.setLoggedIn(username);
                         showMainApp();
-                        NotificationManager.show('مرحباً بك في النظام الشامل لإدارة النقل المدرسي مع الدردشة', 'success');
+                        NotificationManager.show('مرحباً بك في النظام الشامل لإدارة النقل المدرسي', 'success');
                     }, 1500);
                 } catch (error) {
                     console.error('Login error:', error);
@@ -2794,9 +2530,6 @@
                     case 'resignations':
                         renderResignationsTable();
                         break;
-                    case 'messages':
-                        // Chat is already initialized
-                        break;
                 }
             } catch (error) {
                 console.error(`Error loading ${section} data:`, error);
@@ -2885,7 +2618,7 @@
             if (appState.students.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                        <td colspan="9" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-user-graduate text-4xl mb-4 opacity-50"></i>
                                 <p class="text-lg font-medium">لا توجد بيانات طلاب</p>
@@ -2904,16 +2637,19 @@
                 const row = document.createElement('tr');
                 row.className = 'table-row';
                 row.style.animation = 'fadeInUp 0.5s ease-out';
+                row.dataset.studentId = student.id;
                 row.innerHTML = `
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">${student.aysisNumber || '-'}</td>
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400 mb-1">${student.grade} - ${student.area}</div>
+                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400 mb-1">${student.grade} - ${student.academicYear || ''} - ${student.semester || ''}</div>
                         <div class="font-medium">${student.name}</div>
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden sm:table-cell">${student.grade}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden md:table-cell">${student.area}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden lg:table-cell">${supervisor?.name || '-'}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden lg:table-cell">${driver?.name || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden md:table-cell">${student.academicYear || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden lg:table-cell">${student.semester || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden lg:table-cell">${student.area}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden xl:table-cell">${supervisor?.name || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden xl:table-cell">${driver?.name || '-'}</td>
                     <td class="px-6 py-4">
                         <div class="flex justify-center gap-2">
                             <button onclick="viewStudent('${student.id}')" class="btn-action btn-view" title="عرض">
@@ -3238,7 +2974,7 @@
             if (appState.maintenance.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-tools text-4xl mb-4 opacity-50"></i>
                                 <p class="text-lg font-medium">لا توجد بيانات صيانة</p>
@@ -3252,7 +2988,6 @@
             
             appState.maintenance.forEach(maintenance => {
                 const bus = appState.buses.find(b => b.id === maintenance.busId);
-                const driver = appState.drivers.find(d => d.id === maintenance.driverId);
                 
                 const row = document.createElement('tr');
                 row.className = 'table-row';
@@ -3264,8 +2999,7 @@
                         <div class="font-medium">${maintenance.date}</div>
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden sm:table-cell">${bus?.number || '-'}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden md:table-cell">${driver?.name || '-'}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden lg:table-cell font-bold text-red-600">${maintenance.cost || '-'} درهم</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden md:table-cell font-bold text-red-600">${maintenance.cost || '-'} درهم</td>
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden lg:table-cell">${maintenance.description || '-'}</td>
                     <td class="px-6 py-4">
                         <div class="flex justify-center gap-2">
@@ -3288,80 +3022,82 @@
         }
 
         function renderAttendanceTable() {
-            const tbody = document.getElementById('attendanceTableBody');
-            if (!tbody) return;
+            const driversBody = document.getElementById('driversAttendanceBody');
+            const supervisorsBody = document.getElementById('supervisorsAttendanceBody');
             
-            tbody.innerHTML = '';
+            if (!driversBody || !supervisorsBody) return;
             
-            if (appState.attendance.length === 0) {
-                tbody.innerHTML = `
+            driversBody.innerHTML = '';
+            supervisorsBody.innerHTML = '';
+            
+            // Filter attendance for today
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Drivers attendance
+            const driversAttendance = appState.attendance.filter(a => a.type === 'driver' && a.date === today);
+            if (driversAttendance.length === 0) {
+                driversBody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                            <div class="flex flex-col items-center">
-                                <i class="fas fa-clock text-4xl mb-4 opacity-50"></i>
-                                <p class="text-lg font-medium">لا توجد سجلات حضور</p>
-                                <p class="text-sm">ابدأ بتسجيل حضور جديد</p>
-                            </div>
+                        <td colspan="3" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                            <p class="text-sm">لا توجد بيانات حضور اليوم</p>
                         </td>
                     </tr>
                 `;
-                return;
+            } else {
+                driversAttendance.forEach(attendance => {
+                    const driver = appState.drivers.find(d => d.id === attendance.personId);
+                    if (driver) {
+                        const row = document.createElement('tr');
+                        row.className = 'table-row';
+                        row.innerHTML = `
+                            <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400 mb-1">${attendance.time}</div>
+                                <div class="font-medium">${driver.name}</div>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-900 dark:text-white hidden sm:table-cell">${attendance.time}</td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="status-badge ${attendance.status === 'present' ? 'status-present' : 'status-absent'}">
+                                    ${attendance.status === 'present' ? 'حاضر' : 'غائب'}
+                                </span>
+                            </td>
+                        `;
+                        driversBody.appendChild(row);
+                    }
+                });
             }
             
-            // Sort attendance by date (newest first)
-            const sortedAttendance = [...appState.attendance].sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            sortedAttendance.forEach(attendance => {
-                let person = null;
-                let personType = '';
-                
-                if (attendance.type === 'driver') {
-                    person = appState.drivers.find(d => d.id === attendance.personId);
-                    personType = 'سائق';
-                } else if (attendance.type === 'supervisor') {
-                    person = appState.supervisors.find(s => s.id === attendance.personId);
-                    personType = 'مشرفة';
-                }
-                
-                if (!person) return;
-                
-                const row = document.createElement('tr');
-                row.className = 'table-row';
-                row.style.animation = 'fadeInUp 0.5s ease-out';
-                row.innerHTML = `
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                        <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400 mb-1">${personType}</div>
-                        <div class="font-medium">${person.name}</div>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden sm:table-cell">${personType}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                        <div class="block md:hidden text-xs text-gray-500 dark:text-gray-400 mb-1">${attendance.time}</div>
-                        <div class="font-medium">${attendance.date}</div>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white hidden md:table-cell">${attendance.time}</td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="status-badge ${attendance.status === 'present' ? 'status-present' : 'status-absent'}">
-                            ${attendance.status === 'present' ? 'حاضر' : 'غائب'}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex justify-center gap-2">
-                            <button onclick="viewAttendance('${attendance.id}')" class="btn-action btn-view" title="عرض">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button onclick="editAttendance('${attendance.id}')" class="btn-action btn-edit" title="تعديل">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="deleteAttendance('${attendance.id}')" class="btn-action btn-delete" title="حذف">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
+            // Supervisors attendance
+            const supervisorsAttendance = appState.attendance.filter(a => a.type === 'supervisor' && a.date === today);
+            if (supervisorsAttendance.length === 0) {
+                supervisorsBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                            <p class="text-sm">لا توجد بيانات حضور اليوم</p>
+                        </td>
+                    </tr>
                 `;
-                tbody.appendChild(row);
-            });
-            
-            updateSearchCounter('attendance', appState.attendance.length, appState.attendance.length);
+            } else {
+                supervisorsAttendance.forEach(attendance => {
+                    const supervisor = appState.supervisors.find(s => s.id === attendance.personId);
+                    if (supervisor) {
+                        const row = document.createElement('tr');
+                        row.className = 'table-row';
+                        row.innerHTML = `
+                            <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                <div class="block sm:hidden text-xs text-gray-500 dark:text-gray-400 mb-1">${attendance.time}</div>
+                                <div class="font-medium">${supervisor.name}</div>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-900 dark:text-white hidden sm:table-cell">${attendance.time}</td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="status-badge ${attendance.status === 'present' ? 'status-present' : 'status-absent'}">
+                                    ${attendance.status === 'present' ? 'حاضر' : 'غائب'}
+                                </span>
+                            </td>
+                        `;
+                        supervisorsBody.appendChild(row);
+                    }
+                });
+            }
         }
 
         function renderResignationsTable() {
@@ -3464,6 +3200,11 @@
             const driverOptions = appState.drivers.map(d => 
                 `<option value="${d.id}" ${student?.driverId === d.id ? 'selected' : ''}>${d.name}</option>`
             ).join('');
+
+            const academicYears = generateAcademicYears();
+            const academicYearOptions = academicYears.map(year =>
+                `<option value="${year}" ${student?.academicYear === year ? 'selected' : ''}>${year}</option>`
+            ).join('');
             
             document.getElementById('modalContent').innerHTML = `
                 <form id="studentForm" class="space-y-4">
@@ -3478,6 +3219,22 @@
                     <div class="form-group">
                         <label class="form-label">الصف <span class="text-red-500">*</span></label>
                         <input type="text" id="grade" value="${student?.grade || ''}" class="input-professional" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">السنة الدراسية <span class="text-red-500">*</span></label>
+                        <select id="academicYear" class="input-professional" required>
+                            <option value="">اختر السنة الدراسية</option>
+                            ${academicYearOptions}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الفصل الدراسي <span class="text-red-500">*</span></label>
+                        <select id="semester" class="input-professional" required>
+                            <option value="">اختر الفصل الدراسي</option>
+                            <option value="الفصل الأول" ${student?.semester === 'الفصل الأول' ? 'selected' : ''}>الفصل الأول</option>
+                            <option value="الفصل الثاني" ${student?.semester === 'الفصل الثاني' ? 'selected' : ''}>الفصل الثاني</option>
+                            <option value="الفصل الثالث" ${student?.semester === 'الفصل الثالث' ? 'selected' : ''}>الفصل الثالث</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">المنطقة <span class="text-red-500">*</span></label>
@@ -3522,38 +3279,21 @@
             const submitText = document.getElementById('submitText');
             const submitLoading = document.getElementById('submitLoading');
 
-            const data = {
-                aysisNumber: document.getElementById('aysisNumber').value.trim(),
-                name: document.getElementById('studentName').value.trim(),
-                grade: document.getElementById('grade').value.trim(),
-                area: document.getElementById('area').value.trim(),
-                supervisorId: document.getElementById('supervisorId').value,
-                driverId: document.getElementById('driverId').value
-            };
-
-            // التحقق من عدم التكرار
-            const duplicateCheck = checkDuplicateStudent(data.aysisNumber, data.name, editingId);
-            
-            if (duplicateCheck.aysisExists) {
-                NotificationManager.show(`رقم الأسيس "${data.aysisNumber}" موجود بالفعل للطالب "${duplicateCheck.aysisStudent.name}"`, 'error');
-                document.getElementById('aysisNumber').focus();
-                document.getElementById('aysisNumber').classList.add('error');
-                setTimeout(() => document.getElementById('aysisNumber').classList.remove('error'), 3000);
-                return;
-            }
-            
-            if (duplicateCheck.nameExists) {
-                NotificationManager.show(`الاسم "${data.name}" موجود بالفعل برقم أسيس "${duplicateCheck.nameStudent.aysisNumber}"`, 'error');
-                document.getElementById('studentName').focus();
-                document.getElementById('studentName').classList.add('error');
-                setTimeout(() => document.getElementById('studentName').classList.remove('error'), 3000);
-                return;
-            }
-
             isSubmitting = true;
             submitBtn.disabled = true;
             submitText.classList.add('hidden');
             submitLoading.classList.remove('hidden');
+
+            const data = {
+                aysisNumber: document.getElementById('aysisNumber').value.trim(),
+                name: document.getElementById('studentName').value.trim(),
+                grade: document.getElementById('grade').value.trim(),
+                academicYear: document.getElementById('academicYear').value,
+                semester: document.getElementById('semester').value,
+                area: document.getElementById('area').value.trim(),
+                supervisorId: document.getElementById('supervisorId').value,
+                driverId: document.getElementById('driverId').value
+            };
             
             try {
                 if (editingId) {
@@ -3985,7 +3725,7 @@
             }
         }
 
-        // Form Functions - Part 6: Maintenance (المحدث مع إضافة السائق)
+        // Form Functions - Part 6: Maintenance
         function openMaintenanceForm(maintenanceId = null) {
             editingId = maintenanceId;
             const maintenance = maintenanceId ? appState.maintenance.find(m => m.id === maintenanceId) : null;
@@ -3994,10 +3734,6 @@
             
             const busOptions = appState.buses.map(b => 
                 `<option value="${b.id}" ${maintenance?.busId === b.id ? 'selected' : ''}>${b.number} - ${b.company}</option>`
-            ).join('');
-            
-            const driverOptions = appState.drivers.map(d => 
-                `<option value="${d.id}" ${maintenance?.driverId === d.id ? 'selected' : ''}>${d.name}</option>`
             ).join('');
             
             document.getElementById('modalContent').innerHTML = `
@@ -4014,16 +3750,9 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">الحافلة <span class="text-red-500">*</span></label>
-                        <select id="busId" class="input-professional" required onchange="updateDriverBasedOnBus()">
+                        <select id="busId" class="input-professional" required>
                             <option value="">اختر الحافلة</option>
                             ${busOptions}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">السائق</label>
-                        <select id="driverId" class="input-professional">
-                            <option value="">اختر السائق</option>
-                            ${driverOptions}
                         </select>
                     </div>
                     <div class="form-group">
@@ -4054,26 +3783,6 @@
             showModal();
         }
 
-        // دالة لتحديث السائق بناءً على الحافلة المختارة
-        function updateDriverBasedOnBus() {
-            const busId = document.getElementById('busId').value;
-            const driverSelect = document.getElementById('driverId');
-            
-            if (!busId) {
-                driverSelect.innerHTML = '<option value="">اختر السائق</option>';
-                appState.drivers.forEach(driver => {
-                    driverSelect.innerHTML += `<option value="${driver.id}">${driver.name}</option>`;
-                });
-                return;
-            }
-            
-            // جلب السائق المناسب للحافلة (يمكن تطوير هذه الخاصية لربط السائق بالحافلة)
-            driverSelect.innerHTML = '<option value="">اختر السائق</option>';
-            appState.drivers.forEach(driver => {
-                driverSelect.innerHTML += `<option value="${driver.id}">${driver.name}</option>`;
-            });
-        }
-
         async function handleMaintenanceSubmit(e) {
             e.preventDefault();
             
@@ -4091,7 +3800,6 @@
             const data = {
                 type: document.getElementById('maintenanceType').value,
                 busId: document.getElementById('busId').value,
-                driverId: document.getElementById('driverId').value,
                 date: document.getElementById('maintenanceDate').value,
                 cost: document.getElementById('cost').value,
                 description: document.getElementById('description').value.trim()
@@ -4125,7 +3833,7 @@
             }
         }
 
-        // Form Functions - Part 7: Attendance (المحدث)
+        // Form Functions - Part 7: Attendance
         function openAttendanceForm(attendanceId = null) {
             editingId = attendanceId;
             const attendance = attendanceId ? appState.attendance.find(a => a.id === attendanceId) : null;
@@ -4631,7 +4339,6 @@
             updateDashboardStats();
         }
 
-        // Enhanced Export Function with Arabic Support
         function exportToExcel(section) {
             try {
                 const data = appState[section];
@@ -4641,32 +4348,18 @@
                     return;
                 }
 
-                // Convert data to Arabic format
-                const arabicData = convertDataToArabic(section, data);
-                
                 // Create a new workbook
                 const wb = XLSX.utils.book_new();
                 
                 // Convert data to worksheet
-                const ws = XLSX.utils.json_to_sheet(arabicData);
+                const ws = XLSX.utils.json_to_sheet(data);
                 
-                // Add the worksheet to the workbook with Arabic name
-                const sectionNames = {
-                    'students': 'الطلاب',
-                    'supervisors': 'المشرفات',
-                    'drivers': 'السائقين',
-                    'buses': 'الحافلات',
-                    'fuel': 'الديزل',
-                    'maintenance': 'الصيانة',
-                    'attendance': 'الحضور والانصراف',
-                    'resignations': 'الاستقالات والإجازات'
-                };
-                
-                XLSX.utils.book_append_sheet(wb, ws, sectionNames[section] || section);
+                // Add the worksheet to the workbook
+                XLSX.utils.book_append_sheet(wb, ws, section);
                 
                 // Generate file name with current date
-                const date = new Date().toLocaleDateString('ar-SA');
-                const fileName = `${sectionNames[section]}_${date}.xlsx`;
+                const date = new Date().toISOString().split('T')[0];
+                const fileName = `${section}_${date}.xlsx`;
                 
                 // Save the file
                 XLSX.writeFile(wb, fileName);
@@ -4676,121 +4369,6 @@
                 console.error('Export error:', error);
                 NotificationManager.show('حدث خطأ أثناء التصدير', 'error');
             }
-        }
-
-        // Function to convert data to Arabic headers and content
-        function convertDataToArabic(section, data) {
-            const arabicMappings = {
-                'students': {
-                    'aysisNumber': 'رقم الأسيس',
-                    'name': 'اسم الطالب',
-                    'grade': 'الصف',
-                    'area': 'المنطقة',
-                    'supervisorId': 'المشرفة',
-                    'driverId': 'السائق'
-                },
-                'supervisors': {
-                    'permitNumber': 'رقم التصريح',
-                    'name': 'اسم المشرفة',
-                    'phone': 'رقم الهاتف',
-                    'expiryDate': 'تاريخ انتهاء التصريح',
-                    'area': 'المنطقة'
-                },
-                'drivers': {
-                    'permitNumber': 'رقم التصريح',
-                    'name': 'اسم السائق',
-                    'phone': 'رقم الهاتف',
-                    'area': 'المنطقة',
-                    'expiryDate': 'تاريخ انتهاء التصريح'
-                },
-                'buses': {
-                    'number': 'رقم الحافلة',
-                    'company': 'اسم الشركة',
-                    'type': 'النوع',
-                    'dotNumber': 'رقم DOT',
-                    'dotExpiryDate': 'تاريخ انتهاء DOT',
-                    'ownershipExpiryDate': 'تاريخ انتهاء الملكية'
-                },
-                'fuel': {
-                    'busId': 'رقم الحافلة',
-                    'driverId': 'اسم السائق',
-                    'date': 'تاريخ التعبئة',
-                    'amount': 'المبلغ (درهم)'
-                },
-                'maintenance': {
-                    'type': 'نوع الصيانة',
-                    'date': 'تاريخ الصيانة',
-                    'busId': 'رقم الحافلة',
-                    'driverId': 'السائق',
-                    'cost': 'التكلفة (درهم)',
-                    'description': 'الوصف'
-                },
-                'attendance': {
-                    'type': 'النوع',
-                    'personId': 'الاسم',
-                    'date': 'التاريخ',
-                    'time': 'الوقت',
-                    'status': 'الحالة'
-                },
-                'resignations': {
-                    'personType': 'نوع الشخص',
-                    'personId': 'الاسم',
-                    'status': 'الحالة',
-                    'date': 'التاريخ',
-                    'reason': 'السبب'
-                }
-            };
-
-            const statusMappings = {
-                'present': 'حاضر',
-                'absent': 'غائب',
-                'driver': 'سائق',
-                'supervisor': 'مشرفة',
-                'resignation': 'استقالة',
-                'termination': 'إنهاء خدمات',
-                'leave': 'إجازة',
-                'أشوك': 'أشوك',
-                'روزا': 'روزا'
-            };
-
-            const mapping = arabicMappings[section] || {};
-            
-            return data.map(item => {
-                const arabicItem = {};
-                
-                for (const [englishKey, arabicKey] of Object.entries(mapping)) {
-                    let value = item[englishKey];
-                    
-                    // Convert IDs to names
-                    if (englishKey === 'supervisorId' && value) {
-                        const supervisor = appState.supervisors.find(s => s.id === value);
-                        value = supervisor ? supervisor.name : value;
-                    } else if (englishKey === 'driverId' && value) {
-                        const driver = appState.drivers.find(d => d.id === value);
-                        value = driver ? driver.name : value;
-                    } else if (englishKey === 'busId' && value) {
-                        const bus = appState.buses.find(b => b.id === value);
-                        value = bus ? bus.number : value;
-                    } else if (englishKey === 'personId' && value) {
-                        let person = null;
-                        if (item.type === 'driver') {
-                            person = appState.drivers.find(d => d.id === value);
-                        } else if (item.type === 'supervisor') {
-                            person = appState.supervisors.find(s => s.id === value);
-                        }
-                        value = person ? person.name : value;
-                    }
-                    
-                    // Convert status values to Arabic
-                    if (typeof value === 'string' && statusMappings[value]) {
-                        value = statusMappings[value];
-                    }
-                    
-                    arabicItem[arabicKey] = value || '';
-                }
-                
-                return arabicItem;
-            });
         }
 
         // Modal functions
@@ -4810,8 +4388,6 @@
 
         // Make functions available globally
         window.showSection = showSection;
-        window.sendMessage = sendMessage;
-        window.handleMessageKeyPress = handleMessageKeyPress;
         window.openStudentForm = openStudentForm;
         window.openSupervisorForm = openSupervisorForm;
         window.openDriverForm = openDriverForm;
@@ -4826,9 +4402,11 @@
         window.performGlobalSearch = performGlobalSearch;
         window.clearGlobalSearch = clearGlobalSearch;
         window.clearSearch = clearSearch;
+        window.toggleStudentFilters = toggleStudentFilters;
+        window.filterStudentsByFilters = filterStudentsByFilters;
+        window.clearAllStudentFilters = clearAllStudentFilters;
         window.updatePersonOptions = updatePersonOptions;
         window.updateResignationPersonOptions = updateResignationPersonOptions;
-        window.updateDriverBasedOnBus = updateDriverBasedOnBus;
         window.closeModal = closeModal;
         window.viewStudent = viewStudent;
         window.editStudent = editStudent;
