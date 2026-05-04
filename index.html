@@ -4339,35 +4339,141 @@
             updateDashboardStats();
         }
 
+        // --- الدالة المعدلة لتصدير الملفات باللغة العربية ---
         function exportToExcel(section) {
             try {
-                const data = appState[section];
+                // عمل نسخة من البيانات لتجنب تعديل الحالة الأصلية
+                let sourceData = JSON.parse(JSON.stringify(appState[section]));
                 
-                if (!data || data.length === 0) {
+                if (!sourceData || sourceData.length === 0) {
                     NotificationManager.show('لا توجد بيانات للتصدير', 'warning');
                     return;
                 }
 
-                // Create a new workbook
+                // خريطة ترجمة رؤوس الأعمدة لكل قسم وتنسيق البيانات للعرض
+                const translatedData = sourceData.map(item => {
+                    const newItem = {};
+                    
+                    // تعريف الحقول لكل قسم باللغة العربية
+                    const mappings = {
+                        'students': {
+                            'aysisNumber': 'رقم الاسيس',
+                            'name': 'اسم الطالب',
+                            'grade': 'الصف',
+                            'academicYear': 'السنة الدراسية',
+                            'semester': 'الفصل الدراسي',
+                            'area': 'المنطقة',
+                            'supervisorId': 'المشرفة',
+                            'driverId': 'السائق'
+                        },
+                        'supervisors': {
+                            'permitNumber': 'رقم التصريح',
+                            'name': 'اسم المشرفة',
+                            'phone': 'رقم الهاتف',
+                            'expiryDate': 'تاريخ انتهاء التصريح',
+                            'area': 'المنطقة'
+                        },
+                        'drivers': {
+                            'permitNumber': 'رقم التصريح',
+                            'name': 'اسم السائق',
+                            'phone': 'رقم الهاتف',
+                            'area': 'المنطقة',
+                            'expiryDate': 'تاريخ انتهاء التصريح'
+                        },
+                        'buses': {
+                            'number': 'رقم الحافلة',
+                            'company': 'اسم الشركة',
+                            'type': 'النوع',
+                            'dotNumber': 'رقم DOT',
+                            'dotExpiryDate': 'تاريخ انتهاء DOT',
+                            'ownershipExpiryDate': 'تاريخ انتهاء الملكية'
+                        },
+                        'fuel': {
+                            'busId': 'رقم الحافلة',
+                            'driverId': 'اسم السائق',
+                            'date': 'تاريخ التعبئة',
+                            'amount': 'المبلغ (درهم)'
+                        },
+                        'maintenance': {
+                            'type': 'نوع الصيانة',
+                            'busId': 'رقم الحافلة',
+                            'date': 'تاريخ الصيانة',
+                            'cost': 'التكلفة (درهم)',
+                            'description': 'الوصف'
+                        },
+                        'attendance': {
+                            'type': 'النوع',
+                            'personId': 'الاسم',
+                            'date': 'التاريخ',
+                            'time': 'الوقت',
+                            'status': 'الحالة'
+                        },
+                        'resignations': {
+                            'personType': 'الفئة',
+                            'personId': 'الاسم',
+                            'status': 'الحالة',
+                            'date': 'التاريخ',
+                            'reason': 'السبب'
+                        }
+                    };
+
+                    const sectionMap = mappings[section] || {};
+                    
+                    for (const key in sectionMap) {
+                        let val = item[key];
+                        
+                        // استبدال المعرفات (IDs) بالأسماء الحقيقية لسهولة القراءة
+                        if (key === 'supervisorId') val = appState.supervisors.find(s => s.id === val)?.name || val;
+                        if (key === 'driverId') val = appState.drivers.find(d => d.id === val)?.name || val;
+                        if (key === 'busId') val = appState.buses.find(b => b.id === val)?.number || val;
+                        if (key === 'personId') {
+                            const pType = item.type || item.personType;
+                            if (pType === 'driver') val = appState.drivers.find(d => d.id === val)?.name || val;
+                            else val = appState.supervisors.find(s => s.id === val)?.name || val;
+                        }
+                        
+                        // ترجمة الحالات الثابتة
+                        if (key === 'status' && section === 'attendance') val = val === 'present' ? 'حاضر' : 'غائب';
+                        if (key === 'type' && section === 'attendance') val = val === 'driver' ? 'سائق' : 'مشرفة';
+                        if (key === 'personType') val = val === 'driver' ? 'سائق' : 'مشرفة';
+                        if (key === 'status' && section === 'resignations') {
+                            val = { 'resignation': 'استقالة', 'termination': 'إنهاء خدمات', 'leave': 'إجازة' }[val] || val;
+                        }
+
+                        newItem[sectionMap[key]] = val || '-';
+                    }
+                    return newItem;
+                });
+
                 const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(translatedData);
                 
-                // Convert data to worksheet
-                const ws = XLSX.utils.json_to_sheet(data);
+                // ضبط اتجاه الورقة من اليمين إلى اليسار (RTL) لدعم العربية بشكل صحيح
+                if(!ws['!view']) ws['!view'] = [];
+                ws['!dir'] = "rtl";
+
+                // تسمية الورقة والملف بالعربي
+                const sectionNames = {
+                    'students': 'الطلاب',
+                    'supervisors': 'المشرفات',
+                    'drivers': 'السائقين',
+                    'buses': 'الحافلات',
+                    'fuel': 'الديزل',
+                    'maintenance': 'الصيانة',
+                    'attendance': 'الحضور_والانصراف',
+                    'resignations': 'الاستقالات_والإجازات'
+                };
+
+                const sheetTitle = sectionNames[section] || section;
+                XLSX.utils.book_append_sheet(wb, ws, sheetTitle);
                 
-                // Add the worksheet to the workbook
-                XLSX.utils.book_append_sheet(wb, ws, section);
+                const dateStr = new Date().toISOString().split('T')[0];
+                XLSX.writeFile(wb, `${sheetTitle}_${dateStr}.xlsx`);
                 
-                // Generate file name with current date
-                const date = new Date().toISOString().split('T')[0];
-                const fileName = `${section}_${date}.xlsx`;
-                
-                // Save the file
-                XLSX.writeFile(wb, fileName);
-                
-                NotificationManager.show(`تم تصدير ${data.length} عنصر بنجاح`, 'success');
+                NotificationManager.show(`تم تصدير ملف (${sheetTitle}) بالعربية بنجاح`, 'success');
             } catch (error) {
                 console.error('Export error:', error);
-                NotificationManager.show('حدث خطأ أثناء التصدير', 'error');
+                NotificationManager.show('حدث خطأ أثناء تصدير الملف', 'error');
             }
         }
 
